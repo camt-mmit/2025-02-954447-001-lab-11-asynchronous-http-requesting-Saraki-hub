@@ -10,7 +10,9 @@ import { Person, ResultsList } from '../../types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PeopleFetchedListPage {
-  protected readonly data$ = fetch('https://swapi.dev/api/people').then(
-(res) => res.json() as Promise<ResultsList<Person>>,
-);
+  protected readonly data$ = fetch('https://swapi.dev/api/people/').then(
+    (res) => res.json() as Promise<ResultsList<Person>>,
+  ); // fetch api assump that all response are successfully even if server response with error
+
+
 }

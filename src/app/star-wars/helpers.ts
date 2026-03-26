@@ -1,2 +1,2 @@
-export * from './helpes/utils';
-export * from './helpes/resources';
+export * from './helpers/utils';
+export * from './helpers/resources';

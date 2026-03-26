@@ -1,26 +1,24 @@
-import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { PersonView } from '../../component/person-view/person-view';
+import { PersonView } from '../../components/person-view/person-view';
 import { personResource } from '../../helpers';
-import { ModuleActivatedRoute } from '../../tokens';
+import { JsonPipe } from '@angular/common';
+import { ModuleRoute } from '../../token';
 
 @Component({
   selector: 'app-person-view-page',
-  imports: [PersonView],
+  imports: [PersonView, JsonPipe],
   templateUrl: './person-view-page.html',
   styleUrl: './person-view-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PersonViewPage {
-  readonly id = input.required<string>();
+  readonly id = input.required<string>(); //bind route parameter
 
-  protected moduleRoute = inject(ModuleActivatedRoute);
+  protected readonly moduleRoute = inject(ModuleRoute);
+  readonly dataResource = personResource(() => this.id()); //or เขียนเป็นฟังชั่นไปเลย personResource(this.id)
 
-  protected readonly resource = personResource(this.id).asReadonly();
-
-  private readonly location = inject(Location);
 
   protected goBack(): void {
-    this.location.back();
+    history.back(); //ไม่ค่อยแนะนำ
   }
 }

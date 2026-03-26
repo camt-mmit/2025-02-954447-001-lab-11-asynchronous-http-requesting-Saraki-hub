@@ -1,120 +1,70 @@
-<hr />
-<dl class="_data-view">
-  <dt>Name</dt>
-  <dd>
-    <a
-      [href]="data().name"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="app-cmp-link app-cl-external"
-      >{{ data().name }}</a
-    >
-  </dd>
-
-  <dt>Diameter</dt>
-  <dd>
-    @if (typeof data().diameter === 'number') {
-      <span class="app-cl-number _number-data">{{ data().diameter | number }}</span> km
-    } @else {
-      {{ data().diameter }}
-    }
-  </dd>
-
-  <dt>Rotation Period</dt>
-  <dd>
-    @if (typeof data().rotation_period === 'number') {
-      <span class="app-cl-number _number-data">{{ data().rotation_period | number }}</span> hr
-    } @else {
-      {{ data().orbital_period }}
-    }
-  </dd>
-
-  <dt>Orbital Period</dt>
-  <dd>
-    @if (typeof data().orbital_period === 'number') {
-      <span class="app-cl-number _number-data">{{ data().orbital_period | number }}</span> days
-    } @else {
-      {{ data().orbital_period }}
-    }
-  </dd>
-
-  <dt>Gravity</dt>
-  <dd>{{ data().gravity }}</dd>
-
-  <dt>Population</dt>
-  <dd>
-    @if (typeof data().population === 'number') {
-      <span class="app-cl-number _number-data">{{ data().population | number }}</span>
-    } @else {
-      {{ data().population }}
-    }
-  </dd>
-
-  <dt>Climate</dt>
+<dl>
+  <dt>Name :</dt>
+  <dd>{{ data().name }}</dd>
+  <dt>Rotation period :</dt>
+  <dd>{{ data().rotation_period }}</dd>
+  <dt>Orbital period :</dt>
+  <dd>{{ data().orbital_period }}</dd>
+  <dt>Diameter :</dt>
+  <dd>{{ data().diameter }}</dd>
+  <dt>Climate :</dt>
   <dd>{{ data().climate }}</dd>
-
-  <dt>Terrain</dt>
+  <dt>Gravity :</dt>
+  <dd>{{ data().gravity }}</dd>
+  <dt>Terrain :</dt>
   <dd>{{ data().terrain }}</dd>
+  <dt>Surface water :</dt>
+  <dd>{{ data().surface_water }}</dd>
+  <dt>Population :</dt>
+  @if (typeof data().population === 'number') {
+    <dd>{{ data().population | number }}</dd>
+  }
+  <dd>{{ data().population }}</dd>
 
-  <dt>Surface Water</dt>
+  <dt>Residents :</dt>
   <dd>
-    @if (typeof data().surface_water === 'number') {
-      <span class="app-cl-number _number-data">{{ data().surface_water | number }}</span> %
-    } @else {
-      {{ data().surface_water }}
+    @for (fieldTree of form.residents; track fieldTree) {
+      @let resource = fieldTree().metadata(residentResourceKey)!;
+
+      @if (resource.hasValue()) {
+        <a
+          [routerLink]="['people', resource.value().url | extractIdPipe]"
+          [relativeTo]="moduleRoute()"
+          ><span>{{ resource.value().name }}</span></a
+        ><br />
+      } @else if (resource.error(); as error) {
+        {{ error.message }}
+      } @else if (resource.isLoading()) {
+        Loading...
+      }
+    } @empty {
+      <p>No Resident</p>
     }
   </dd>
 
-  <dt>Residents</dt>
+  <dt>Films :</dt>
   <dd>
-    <ul>
-      @for (fieldTree of form.residents; track fieldTree) {
-        @let resouce = fieldTree().metadata(residentResourceKey)!;
-        <li>
-          @if (resouce.hasValue()) {
-            <a
-              [routerLink]="['people', resouce.value().url | extractId]"
-              [relativeTo]="moduleRoute()"
-              class="app-cmp-link"
-              >{{ resouce.value().name }}</a
-            >
-          } @else if (resouce.error(); as error) {
-            <span class="_status-warning">{{ error.message }}</span>
-          } @else if (resouce.isLoading()) {
-            <span class="_status-loading">Loading</span>
-          }
-        </li>
-      }
-    </ul>
-  </dd>
+    @for (fieldTree of form.films; track fieldTree) {
+      @let resource = fieldTree().metadata(filmResourceKey)!;
 
-  <dt>Films</dt>
-  <dd>
-    <ul>
-      @for (fieldTree of form.films; track fieldTree) {
-        @let resource = fieldTree().metadata(filmResourceKey)!;
-        <li>
-          @if (resource.hasValue()) {
-            <a
-              [routerLink]="['films', resource.value().url | extractId]"
-              [relativeTo]="moduleRoute()"
-              class="app-cmp-link"
-              >{{ resource.value().title }}</a
-            >
-          } @else if (resource.error(); as error) {
-            <span class="_status-warning">{{ error.message }}</span>
-          } @else if (resource.isLoading()) {
-            <span class="_status-loading">Loading</span>
-          }
-        </li>
+      @if (resource.hasValue()) {
+        <a
+          [routerLink]="['film', resource.value().url | extractIdPipe]"
+          [relativeTo]="moduleRoute()"
+          ><span>{{ resource.value().title }}</span></a
+        ><br />
+      } @else if (resource.error(); as error) {
+        {{ error.message }}
+      } @else if (resource.isLoading()) {
+        Loading...
       }
-    </ul>
+    } @empty {
+      <p>No Film</p>
+    }
   </dd>
-
-  <dt>Created</dt>
+  <dt>Created :</dt>
   <dd>{{ data().created | date }}</dd>
 
-  <dt>Edited</dt>
+  <dt>Edited :</dt>
   <dd>{{ data().edited | date }}</dd>
 </dl>
-<hr />

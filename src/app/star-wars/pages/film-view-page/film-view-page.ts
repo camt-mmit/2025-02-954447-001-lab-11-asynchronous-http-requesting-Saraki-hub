@@ -1,8 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { Location } from '@angular/common';
-import { FilmView } from '../../components/film-view/film-view';
-import { ModuleActivatedRoute } from '../../tokens';
+import { ModuleRoute } from '../../token';
 import { filmResource } from '../../helpers';
+import { FilmView } from '../../components/film-view/film-view';
 
 @Component({
   selector: 'app-film-view-page',
@@ -12,15 +11,11 @@ import { filmResource } from '../../helpers';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FilmViewPage {
-readonly id = input.required<string>();
+  readonly id = input.required<string>(); //bind route parameter
 
-  protected moduleRoute = inject(ModuleActivatedRoute);
-
-  protected readonly resource = filmResource(this.id).asReadonly();
-
-  private readonly location = inject(Location);
-
-  protected goBack(): void {
-    this.location.back();
+  protected readonly moduleRoute = inject(ModuleRoute);
+  readonly dataResource = filmResource(() => this.id());
+  protected goback() {
+    history.back();
   }
 }

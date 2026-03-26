@@ -1,0 +1,151 @@
+@use 'sass:color';
+
+$primary-color: #7c3aed;        // ม่วง
+$text-main: #1e1b2e;
+$text-muted: #6b7280;
+$border-color: #e5e7eb;
+$bg-section: #faf5ff;           // ม่วงอ่อนมาก
+$danger-color: #ef4444;
+$accent-color: #a78bfa;         // ม่วงกลาง
+
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  &[disabled] {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  b {
+    font-size: 0.82rem;
+    color: $text-muted;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  input {
+    padding: 11px 14px;
+    border: 1.5px solid $border-color;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    color: $text-main;
+    background-color: #ffffff;
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-color;
+      background-color: #fdfbff;
+      box-shadow: 0 0 0 3px rgba($primary-color, 0.12);
+    }
+
+    &::placeholder {
+      color: #c4b5fd;
+    }
+  }
+}
+
+// ==========================================
+// กลุ่ม Dynamic Array
+// ==========================================
+.array-section {
+  background: linear-gradient(135deg, $bg-section 0%, #f5f3ff 100%);
+  padding: 22px;
+  border-radius: 14px;
+  border: 1.5px solid #e9d5ff;
+  box-shadow: 0 2px 8px rgba($primary-color, 0.06);
+
+  legend {
+    width: 100%;
+    margin-bottom: 18px;
+
+    button {
+      background: linear-gradient(135deg, #ffffff, #faf5ff);
+      color: $primary-color;
+      border: 1.5px solid #d8b4fe;
+      padding: 7px 18px;
+      border-radius: 20px;
+      font-size: 0.83rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 4px rgba($primary-color, 0.1);
+
+      &:hover {
+        background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+        border-color: $accent-color;
+        box-shadow: 0 3px 10px rgba($primary-color, 0.2);
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+
+// แถวของแต่ละ Email / Phone
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 12px;
+  animation: slideIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  label {
+    flex: 1;
+  }
+
+  label:first-child {
+    flex: 0.4;
+    min-width: 100px;
+  }
+
+  .remove-btn {
+    background: white;
+    border: 1.5px solid $border-color;
+    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+    color: $text-muted;
+
+    &:hover {
+      background: linear-gradient(135deg, #fef2f2, #fee2e2);
+      border-color: $danger-color;
+      color: $danger-color;
+      transform: scale(1.08);
+      box-shadow: 0 2px 8px rgba($danger-color, 0.2);
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
