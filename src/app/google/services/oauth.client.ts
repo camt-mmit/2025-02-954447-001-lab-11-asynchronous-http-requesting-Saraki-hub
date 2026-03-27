@@ -1,28 +1,98 @@
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import {
   APP_ID,
+  Injectable,
+  Resource,
   computed,
   inject,
-  Injectable,
   resource,
-  ResourceRef,
   signal,
   untracked,
 } from '@angular/core';
-import { AccessTokenData, AuthorizationHeaders, OAUTH_CONFIGURATION } from '../types/services';
-import { arrayBufferToBase64, randomString, sha256 } from '../helpers';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom, throwError } from 'rxjs';
+import { arrayBufferToBase64, extrackJwtClaims, randomString, sha256 } from '../helper';
+import {
+  AccessTokenData,
+  AuthorizationHeaders,
+  IdTokenClaims,
+  OAUTH_CLIENT_CONFIGURATION,
+} from '../types/services';
 
-const KEY_PREFIX = 'oauth';
+export interface OauthErrorDetails {
+  readonly error: string;
+  readonly error_description: string;
+}
+
+export interface OauthErrorCause {
+  readonly details: OauthErrorDetails;
+  readonly source?: unknown;
+}
+
+export class OauthError extends Error {
+  override readonly cause!: OauthErrorCause;
+
+  constructor(details: OauthErrorDetails, source?: Error) {
+    super(details.error_description, {
+      cause: {
+        details,
+        ...(source ? { source } : {}),
+      } satisfies OauthErrorCause,
+    });
+
+    this.name = details.error;
+
+    if ('captureStackTrace' in Error) {
+      (Error.captureStackTrace as (...args: unknown[]) => unknown)(this, this.constructor);
+    }
+  }
+}
+
+export class StateNotFoundError extends OauthError {
+  constructor(stateCode: string) {
+    super({
+      error: 'state_not_found',
+      error_description: `state '${stateCode}' not found`,
+    });
+  }
+}
+
+export class AccessTokenNotFoundError extends OauthError {
+  constructor(message?: string) {
+    super({
+      error: 'access_token_not_found',
+      error_description: message ?? 'access token not found',
+    });
+  }
+}
+
+export class IdTokenNotFoundError extends OauthError {
+  constructor(message?: string) {
+    super({
+      error: 'id_token_not_found',
+      error_description: message ?? 'ID token not found',
+    });
+  }
+}
+
+const keyPrefix = 'oauth';
 
 const defaultCodeVerifierLength = 64;
-const stateCodeLength = 16;
-const stateTtl = 10 * 60 * 1_000; // time to live 10 mins
-const latency = 10 * 1_0000;
+const stateCodeLength = 32;
+const stateTtl = 10 * 60 * 1_000;
+const networkLatency = 10 * 1_000;
 
-interface StateData {
-  readonly expireAt: number;
+interface AccessTokenResponse {
+  readonly access_token: string;
+  readonly expires_in: number;
+  readonly token_type: string;
+  readonly scope: string;
+  readonly refresh_token?: string;
+  readonly id_token?: string;
+}
+
+interface StoredState {
+  readonly expiresAt: number;
   readonly data: {
     readonly codeVerifier: string;
     readonly intendedUrl: string;
@@ -30,127 +100,148 @@ interface StateData {
 }
 
 interface StoredAccessTokenData {
-  readonly expireAt: number;
+  readonly expiresAt: number;
   readonly data: AccessTokenData;
-}
-
-interface AccessTokenResponse {
-  readonly access_token: string;
-  readonly expires_in: number;
-  readonly scope: string;
-  readonly token_type: string;
-  readonly id_token?: string;
-  readonly refreash_token?: string;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class OauthClient {
-  private readonly config = inject(OAUTH_CONFIGURATION);
+  private readonly config = inject(OAUTH_CLIENT_CONFIGURATION);
 
-  private readonly keyPrefix = `${inject(APP_ID)}-${KEY_PREFIX}-${this.config.id}`;
+  private readonly http = inject(HttpClient);
 
-  //equal = true ตัวเก่ากับตัวใหม่เป็นตัวเดียวกัน เพราะ database ชอบส่งobjectใหม่มา
-  // ใส่ # เพื่อให้เป็นprivate จริงๆ เป็นของ Javascript
-  readonly #accessToken = signal<AccessTokenData | null>(null, {
-    equal: (oldValue, newValue) => oldValue?.accessToken === newValue?.accessToken,
-  });
-  private stateKey(stateCode: string) {
-    return `${this.keyPrefix}-state-${stateCode}` as const;
+  private readonly keyPrefix =
+    `${inject(APP_ID)}-${keyPrefix}-${this.config.name}-${this.config.id}` as const;
+
+  // -------------- START: Storage --------------
+  // State Storage
+  private readonly stateKeyPrefix = `${this.keyPrefix}-state` as const;
+
+  private stateKeyName<const C extends string>(code: C) {
+    return `${this.stateKeyPrefix}-${code}` as const;
   }
-  // ----------STATE Storage------------
-  private storeState(stateCode: string, data: StateData['data']): void {
+
+  private setState(code: string, data: StoredState['data']): void {
     localStorage.setItem(
-      this.stateKey(stateCode),
+      this.stateKeyName(code),
       JSON.stringify({
-        expireAt: new Date().getTime() + stateTtl,
+        expiresAt: new Date().getTime() + stateTtl,
         data,
-      } satisfies StateData),
-    ); // satisfies ก้อนนี้สามารถใส่type นี้ได้ แต่ ไม่บังคับtype เหมือน as
+      } satisfies StoredState),
+    );
   }
 
-  private getState(stateCode: string): StateData['data'] | null {
-    const statePrefix = this.stateKey('');
+  private getState(code: string): StoredState['data'] | null {
     const now = new Date().getTime();
 
-    Array.from({ length: localStorage.length }) //ArrayLike
-      .map((_, i) => localStorage.key(i))
-      .filter((key): key is string => key?.startsWith(statePrefix) ?? false) //key is string ถ้า true จะเป็นtypeนั้นไปเลย
-      .forEach((key) => {
-        const item = JSON.parse(
-          localStorage.getItem(this.stateKey(stateCode)) ?? 'null',
-        ) as StateData | null;
-
-        if (item !== null) {
-          if (item.expireAt < now) {
-            localStorage.removeItem(key);
-          }
+    const removedKeys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key !== null && key.startsWith(this.stateKeyName(''))) {
+        const storedData: StoredState | null = JSON.parse(localStorage.getItem(key) ?? 'null');
+        if (storedData !== null && storedData.expiresAt < now) {
+          removedKeys.push(key);
         }
-      });
+      }
+    }
 
-    const result = JSON.parse(
-      localStorage.getItem(this.stateKey(stateCode)) ?? 'null',
-    ) as StateData | null;
+    removedKeys.forEach((key) => localStorage.removeItem(key));
 
-    return result?.data || null;
+    console.debug('state', this.stateKeyName(code), localStorage.getItem(this.stateKeyName(code)));
+
+    return (
+      (JSON.parse(localStorage.getItem(this.stateKeyName(code)) ?? 'null') as StoredState | null)
+        ?.data ?? null
+    );
   }
 
-  private removeState(stateCode: string): void {
-    localStorage.removeItem(this.stateKey(stateCode));
+  private removeState(code: string): void {
+    localStorage.removeItem(this.stateKeyName(code));
   }
 
-  // ----------AcessToken Storage------------
+  // AccessToken Storage
+  private readonly accessTokenKeyName = `${this.keyPrefix}-access_token` as const;
 
-  private readonly accessTokenDataKey = `${this.keyPrefix}-access_token_data` as const;
-
-  private storeAccessTokenData(data: AccessTokenData): void {
+  private setAccessTokenData(data: AccessTokenData): void {
     localStorage.setItem(
-      this.accessTokenDataKey,
+      this.accessTokenKeyName,
       JSON.stringify({
-        expireAt: new Date().getTime() + data.expiresIn * 1_000 - latency,
+        expiresAt: new Date().getTime() + data.expiresIn * 1_000 - networkLatency,
         data,
-      } satisfies StoredAccessTokenData),
+      }),
     );
   }
 
   private getAccessTokenData(): AccessTokenData | null {
-    const storedAccessTokenData: StoredAccessTokenData = JSON.parse(
-      localStorage.getItem(this.accessTokenDataKey) ?? 'null',
+    const now = new Date().getTime();
+
+    const storedAccessTokenData: StoredAccessTokenData | null = JSON.parse(
+      localStorage.getItem(this.accessTokenKeyName) ?? 'null',
     );
 
     if (storedAccessTokenData === null) {
       return null;
     }
 
-    if (storedAccessTokenData.expireAt < new Date().getTime()) {
-      localStorage.removeItem(this.accessTokenDataKey);
+    if (storedAccessTokenData.expiresAt < now) {
+      localStorage.removeItem(this.accessTokenKeyName);
+
       return null;
     }
 
     return storedAccessTokenData.data;
   }
 
-  private removeAccessTokenData(): void {
-    localStorage.removeItem(this.accessTokenDataKey);
+  private removeAccessToken(): void {
+    localStorage.removeItem(this.accessTokenKeyName);
   }
 
-  //-------------Refresh Token----------
-  private readonly refreshTokenDataKey = `${this.keyPrefix}-refresh_token_data` as const;
-  private storeRefreshToken(data: string): void {
-    localStorage.setItem(this.refreshTokenDataKey, data);
+  // RefreshToken Storage
+  private readonly refreshTokenKeyName = `${this.keyPrefix}-refresh_token` as const;
+
+  private setRefreshToken(data: string): void {
+    localStorage.setItem(this.refreshTokenKeyName, data);
   }
 
   private getRefreshToken(): string | null {
-    return localStorage.getItem(this.refreshTokenDataKey);
+    return localStorage.getItem(this.refreshTokenKeyName);
   }
 
-  private removeRefreshToken() {
-    localStorage.removeItem(this.refreshTokenDataKey);
+  private removeRefreshToken(): void {
+    localStorage.removeItem(this.refreshTokenKeyName);
   }
-  //----------END Storage---------------------------
 
-  // ------------Get URL----------------
+  // IdToken Storage
+  private readonly idTokenKeyName = `${this.keyPrefix}-id_token` as const;
+  private readonly idTokenClaimsKeyName = `${this.keyPrefix}-id_token-claims` as const;
+
+  private setIdToken(data: string): void {
+    localStorage.setItem(this.idTokenKeyName, data);
+
+    const claims: IdTokenClaims = {
+      ...JSON.parse(localStorage.getItem(this.idTokenClaimsKeyName) ?? '{}'),
+      ...extrackJwtClaims<IdTokenClaims>(data),
+    };
+    localStorage.setItem(this.idTokenClaimsKeyName, JSON.stringify(claims));
+  }
+
+  private getIdToken(): string | null {
+    return localStorage.getItem(this.idTokenKeyName);
+  }
+
+  private getIdTokenClaims(): IdTokenClaims | null {
+    return JSON.parse(localStorage.getItem(this.idTokenClaimsKeyName) ?? 'null');
+  }
+
+  private removeIdToken(): void {
+    localStorage.removeItem(this.idTokenKeyName);
+    localStorage.removeItem(this.idTokenClaimsKeyName);
+  }
+
+  // -------------- END: Storage --------------
+
   private readonly router = inject(Router);
 
   async getAuthorizationCodeUrl(
@@ -159,134 +250,167 @@ export class OauthClient {
   ): Promise<URL> {
     const url = new URL(this.config.authorizationUrl);
 
-    Object.entries(params).forEach(([Key, value]) => url.searchParams.set(Key, value)); //entries แปลง object เป็น [['key',value],['key',value]]
-
-    const codeVerifier = randomString(this.config.codeVerifierlength ?? defaultCodeVerifierLength); // ควรเก็บใน indexDB
-    const codeChallenge = arrayBufferToBase64(await sha256(codeVerifier), true);
+    Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
 
     url.searchParams.set('client_id', this.config.id);
-    url.searchParams.set('redirect_uri', this.config.redirectUri);
+    url.searchParams.set('redirect_uri', this.config.redirectUrl);
     url.searchParams.set('response_type', 'code');
     url.searchParams.set('scope', scopes.join(' '));
-    url.searchParams.set('code_challenge', codeChallenge);
-    url.searchParams.set('code_challenge_method', 'S256');
-    const stateCode = randomString(stateCodeLength); // ควรเก็บใน indexDB โดนโจมตีโดย XSS(Cross-site-script)ได้แต่ยากขึ้นมาหน่อย (ใช้CSP ช่วยได้ระดับหนึ่ง)
-    // หรือ http-only Cookie แต่โดนโจมตีโดย CSRFได้(ใช้Same-site ช่วยได้)
-    url.searchParams.set('state', stateCode);
 
-    this.storeState(stateCode, {
+    const codeVerifier = randomString(this.config.codeVerifierLength ?? defaultCodeVerifierLength);
+
+    url.searchParams.set('code_challenge', arrayBufferToBase64(await sha256(codeVerifier), true));
+    url.searchParams.set('code_challenge_method', 'S256');
+
+    const stateCode = randomString(stateCodeLength);
+    this.setState(stateCode, {
       codeVerifier,
       intendedUrl: this.router.url,
     });
 
+    url.searchParams.set('state', stateCode);
+
     return url;
   }
 
-  //-----------------Exchange --------
-  private readonly http = inject(HttpClient);
+  async requestToken(formData: FormData): Promise<AccessTokenData> {
+    const accessTokenResponse = await firstValueFrom(
+      this.http.post<AccessTokenResponse>(this.config.tokenUrl, formData).pipe(
+        catchError((error) => {
+          const details: OauthErrorDetails =
+            typeof error === 'undefined' || error === null || typeof error !== 'object'
+              ? {
+                  error: 'unknown',
+                  error_description: `${error}`,
+                }
+              : error instanceof Error || error instanceof HttpErrorResponse
+                ? ((errroResponse: Partial<OauthErrorDetails>) => ({
+                    error: errroResponse?.error ?? error.name,
+                    error_description: errroResponse?.error_description ?? error.message,
+                  }))((error as Partial<HttpErrorResponse>).error)
+                : ((error: Partial<OauthErrorDetails>) => ({
+                    error: error.error ?? 'unknow',
+                    error_description: error.error_description ?? JSON.stringify(error),
+                  }))(error);
 
-  private async requestToken(formData: FormData): Promise<AccessTokenData> {
-    const res = await firstValueFrom(
-      this.http.post<AccessTokenResponse>(this.config.tokenUrl, formData),
+          return throwError(() => new OauthError(details, error));
+        }),
+      ),
     );
 
-    const accessTokenData = {
-      accessToken: res.access_token,
-      tokenType: res.token_type,
-      scope: res.scope,
-      expiresIn: res.expires_in,
+    const accessTokenData: AccessTokenData = {
+      accessToken: accessTokenResponse.access_token,
+      tokeyType: accessTokenResponse.token_type,
+      expiresIn: accessTokenResponse.expires_in,
+      scope: accessTokenResponse.scope,
     };
 
-    this.storeAccessTokenData(accessTokenData);
+    this.setAccessTokenData(accessTokenData);
 
-    if (typeof res.refreash_token !== 'undefined') {
-      this.storeRefreshToken(res.refreash_token);
+    if (accessTokenResponse.refresh_token) {
+      this.setRefreshToken(accessTokenResponse.refresh_token);
     }
+
+    if (accessTokenResponse.id_token) {
+      this.setIdToken(accessTokenResponse.id_token);
+    }
+
     return accessTokenData;
   }
 
-  async exchangeAuthorizationCode(code: string, stateCode: string): Promise<StateData['data']> {
+  async exchangeAuthorizationCode(stateCode: string, code: string): Promise<void> {
     const state = this.getState(stateCode);
+
     if (state === null) {
-      throw new Error(`state ${stateCode} not found`);
+      throw new StateNotFoundError(stateCode);
     }
 
-    const formData = new FormData(); //FormData อยู่ใน web standard จะได้ไม่ต้องสร้างhtml
+    this.removeState(stateCode);
+
+    const formData = new FormData();
 
     formData.set('client_id', this.config.id);
-    if (typeof this.config.secret !== 'undefined') {
+    if (this.config.secret) {
       formData.set('client_secret', this.config.secret);
     }
     formData.set('code', code);
     formData.set('code_verifier', state.codeVerifier);
     formData.set('grant_type', 'authorization_code');
-    formData.set('redirect_uri', this.config.redirectUri);
+    formData.set('redirect_uri', this.config.redirectUrl);
 
     await this.requestToken(formData);
 
-    this.removeState(stateCode);
-    return state;
+    this.router.navigateByUrl(state.intendedUrl, { replaceUrl: true });
   }
 
-  //---------Get Access Token----------
-  private readonly lockKey = `${this.keyPrefix}-lock` as const;
+  readonly #accessToken = signal<AccessTokenData | null>(null, {
+    equal: (oldValue, newValue) => oldValue?.accessToken === newValue?.accessToken,
+  });
+
+  private updateAccessToken(data: AccessTokenData | null): AccessTokenData | null {
+    return untracked(() => {
+      this.#accessToken.set(data);
+
+      return this.#accessToken();
+    });
+  }
+
+  private readonly accessTokenLockName = `${this.keyPrefix}-lock-access_token` as const;
 
   async getAccessToken(): Promise<AccessTokenData | null> {
-    return await navigator.locks.request(this.lockKey, async () => {
-      //ใช้locks เพื่อ prevent data race
+    return await navigator.locks.request(this.accessTokenLockName, async () => {
       const accessTokenData = this.getAccessTokenData();
-      if (accessTokenData === null) {
-        const refreshToken = this.getRefreshToken();
 
-        if (refreshToken !== null) {
-          const formData = new FormData();
-          formData.set('client_id', this.config.id);
-          if (typeof this.config.secret !== 'undefined') {
-            formData.set('client_secret', this.config.secret);
-          }
-          formData.set('grant_type', 'refresh_token');
-          formData.set('refresh_token', refreshToken);
-
-          return this.updateAccessTokenData(await this.requestToken(formData));
-        } else {
-          return this.updateAccessTokenData(null);
-        }
-      } else {
-        return this.updateAccessTokenData(accessTokenData);
+      if (accessTokenData !== null) {
+        return this.updateAccessToken(accessTokenData);
       }
+
+      const refreshToken = this.getRefreshToken();
+
+      if (refreshToken !== null) {
+        const formData = new FormData();
+
+        formData.set('client_id', this.config.id);
+        if (this.config.secret) {
+          formData.set('client_secret', this.config.secret);
+        }
+        formData.set('grant_type', 'refresh_token');
+        formData.set('refresh_token', refreshToken);
+
+        try {
+          return this.updateAccessToken(await this.requestToken(formData));
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      return this.updateAccessToken(null);
     });
   }
 
   async getAuthorizationHeaders(): Promise<AuthorizationHeaders> {
     const accessTokenData = await this.getAccessToken();
+
     if (accessTokenData === null) {
-      throw new Error(`access token not found`);
+      throw new AccessTokenNotFoundError();
     }
+
     return {
-      Authorization: `${accessTokenData?.tokenType} ${accessTokenData?.accessToken}`,
+      Authorization: `${accessTokenData.tokeyType} ${accessTokenData.accessToken}`,
     };
   }
 
-  async clearToken(): Promise<void> {
-    this.removeAccessTokenData();
+  async clearTokens(): Promise<void> {
+    this.removeAccessToken();
     this.removeRefreshToken();
+    this.removeIdToken();
 
     await this.getAccessToken();
   }
 
-  //untracked  เผื่อถูกเรียกในreactiveตัวอื่น
-  private updateAccessTokenData(data: AccessTokenData | null): AccessTokenData | null {
-    return untracked(() => {
-      this.#accessToken.set(data);
-
-      return data;
-    });
-  }
-
-  accessTokenDataResource(): ResourceRef<AccessTokenData | undefined> {
+  accessTokenDataResource(): Resource<AccessTokenData | undefined> {
     return resource({
       stream: async () => {
-        //ต้องreturn signal ที่สามารถส่งค่าออกมาซ้ำๆได้ ถ้าใช้ loader จะ return ค่าเดียว
         await this.getAccessToken();
 
         return computed(() => {
@@ -295,10 +419,35 @@ export class OauthClient {
           if (accessTokenData !== null) {
             return { value: accessTokenData };
           } else {
-            return { error: new Error(`access token not found`) };
+            return { error: new AccessTokenNotFoundError() };
           }
         });
       },
+    }).asReadonly();
+  }
+
+  idTokenClaimsResource(): Resource<IdTokenClaims | undefined> {
+    const idTokenSignal = computed(() => {
+      this.#accessToken();
+      return this.getIdToken();
     });
+
+    return resource({
+      stream: async () => {
+        await this.getAccessToken();
+
+        return computed(() => {
+          idTokenSignal();
+
+          const claims = this.getIdTokenClaims();
+
+          if (claims !== null) {
+            return { value: claims };
+          } else {
+            return { error: new IdTokenNotFoundError() };
+          }
+        });
+      },
+    }).asReadonly();
   }
 }

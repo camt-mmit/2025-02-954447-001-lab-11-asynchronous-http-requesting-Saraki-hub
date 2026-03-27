@@ -1,35 +1,58 @@
-<div class="header-actions">
-  <a routerLink="insert">+ Create Event</a>
-</div>
+<header>
+  <nav>
+    <ul class="app-cmp-nav app-cl-filled _action-links">
+      <li>
+        <a routerLink="insert">
+          <i class="material-symbols-outlined">add_box</i>
+          Event
+        </a>
+      </li>
+    </ul>
+  </nav>
 
-<div class="search-box">
-  <form [formRoot]="form">
-    <input type="text" [formField]="form.q" placeholder="Search events..." />
-    <button type="button" (click)="clearSearch()">✕</button>
+  <form (submit)="$event.preventDefault()" (submit)="onSearch()">
+    <fieldset [disabled]="form().disabled()" class="_search-fieldset">
+      <input type="text" [formField]="form.q" placeholder="Search" aria-label="Search" />
+
+      <button type="button" class="app-cmp-button app-cl-warn" (click)="clearSearch()">
+        <i class="material-symbols-outlined">close</i>
+      </button>
+    </fieldset>
   </form>
-</div>
+
+  <nav class="_page-navigation">
+    <span>
+      @if (this.params().params.timeMin; as timeMin) {
+        <b>Events after: </b><span>{{ timeMin | date }}</span>
+      }
+    </span>
+  </nav>
+</header>
 
 @if (items(); as items) {
-@if (items.length > 0) {
-<app-events-list [items]="items"></app-events-list>
-} @else {
-<p class="empty-state">No events found</p>
+  <app-events-list [data]="items" />
 }
-}
-
 @if (resource.hasValue()) {
-@if (resource.value().nextPageToken; as nextPageToken) {
-<div class="load-more">
-  <button type="button" (click)="loadMore(nextPageToken)">Load More</button>
-</div>
-} @else {
-<div class="end-of-list">
-  <hr />
-  <p>No more events</p>
-</div>
-}
+  @if (resource.value().nextPageToken; as nextPageToken) {
+    @defer (on viewport) {
+      <app-load-trigger (visible)="getMore(nextPageToken)" />
+    } @placeholder {
+      <p class="_status-container">
+        <b>Load more events</b>
+      </p>
+    }
+  } @else {
+    <hr />
+    <p class="_status-container">
+      <b>No more events</b>
+    </p>
+  }
 } @else if (resource.error(); as error) {
-<p class="error">{{ error.message }}</p>
+  <p class="_error-container">
+    <b class="_status-warning">{{ error.message }}</b>
+  </p>
 } @else if (resource.isLoading()) {
-<p class="loading">Loading...</p>
+  <p class="_status-container">
+    <b class="_status-loading">Loading</b>
+  </p>
 }

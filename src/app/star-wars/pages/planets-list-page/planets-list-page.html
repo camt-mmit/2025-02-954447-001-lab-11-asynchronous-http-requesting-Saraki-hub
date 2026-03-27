@@ -44,7 +44,7 @@
   </nav>
 </header>
 @if (resource.hasValue()) {
-  <app-planet-list [data]="resource.value().results"></app-planet-list>
+  <app-planets-list [data]="resource.value().results"></app-planets-list>
 } @else if (resource.error(); as error) {
   <p>{{ error.message }}</p>
 }

@@ -1,13 +1,15 @@
 <header>
   <form (submit)="$event.preventDefault()" (submit)="onSearch()">
-    <fieldset [disabled]="form().disabled()">
-      <!-- Form can not disabled on some browser -->
-      <input type="text" [formField]="form.searchN" placeholder="Search" />
+    <fieldset [disabled]="form().disabled()" class="_search-fieldset">
+      <input type="text" [formField]="form.search" placeholder="Search" aria-label="Search" />
 
-      <button type="button" (click)="clearSearch()">X</button>
+      <button type="button" class="app-cmp-button app-cl-warn" (click)="clearSearch()">
+        <i class="material-symbols-outlined">close</i>
+      </button>
     </fieldset>
   </form>
 </header>
+
 @if (resource.hasValue()) {
   @if (resource.value().results.length > 0) {
     <ul>
@@ -19,7 +21,7 @@
     <p>Not Found</p>
   }
 } @else if (resource.isLoading()) {
-  <p>Loading</p>
+  <p><b class="_status-loading">Loading</b></p>
 } @else if (resource.error(); as error) {
-  <p>{{ error.message }}</p>
+  <p class="_error-message">{{ error.message }}</p>
 }

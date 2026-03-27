@@ -1,21 +1,22 @@
 <nav>
-  <ul>
-    <li>
-      <a routerLink="people-fetched" routerLinkActive="is-active">People</a>
+  <ul class="app-cmp-nav">
+    <li routerLinkActive="app-st-active">
+      <a routerLink="./people"> <i class="material-symbols-outlined"> People</i></a>
     </li>
-    <li>
-      <a routerLink="people-resource" routerLinkActive="is-active">People resource list</a>
+
+    <li routerLinkActive="app-st-active">
+      <a routerLink="./people-http-resource">
+        <i class="material-symbols-outlined">people-http-resource</i></a
+      >
     </li>
-    <li>
-      <a routerLink="people" routerLinkActive="is-active">People list</a>
+    <li routerLinkActive="app-st-active">
+      <a routerLink="./films"> <i class="material-symbols-outlined">movieFilms </i> </a>
     </li>
-    <li>
-      <a routerLink="film" routerLinkActive="is-active">Film list</a>
-    </li>
-    <li>
-      <a routerLink="planet" routerLinkActive="is-active">PPlanet list</a>
+
+    <li routerLinkActive="app-st-active">
+      <a routerLink="./planets"> <i class="material-symbols-outlined">public Planets</i> </a>
     </li>
   </ul>
 </nav>
 
-<router-outlet> </router-outlet>
+<router-outlet />

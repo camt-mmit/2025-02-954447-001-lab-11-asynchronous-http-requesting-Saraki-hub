@@ -1,49 +1,64 @@
 import { Routes } from '@angular/router';
-import { AuthorizationPage } from './pages/authorization-page/authorization-page';
-import { GoogleRoot } from './pages/google-root/google-root';
-import { OAUTH_CONFIGURATION } from './types/services';
 import { googleOauthConfig } from './config';
-import { OauthClient } from './services/oauth.client';
+import { formDirtyComfirmation } from './helper';
+import { AuthorizationPage } from './pages/authorization-page/authorization-page';
+import { EventInsertPage } from './pages/event-insert-page/event-insert-page';
 import { EventsListPage } from './pages/events-list-page/events-list-page';
-import { EventsInsertPage } from './pages/events-insert-page/events-insert-page';
-import { CalendarService } from './services/calendar.service';
+import { GoogleRoot } from './pages/google-root/google-root';
+import { PeopleCreatePage } from './pages/people-create-page/people-create-page';
 import { PeopleListPage } from './pages/people-list-page/people-list-page';
-import { PeopleInsertPage } from './components/people-insert-page/people-insert-page';
-import { PeopleService } from './services/people.service';
+import { FormPage } from './pages/types';
+import { CalendarService } from './services/calendar.service';
+import { OauthClient } from './services/oauth.client';
+import { PeopleService } from './services/people';
+import { OAUTH_CLIENT_CONFIGURATION } from './types/services';
 
 export default [
   {
     path: '',
     providers: [
-      {
-        provide: OAUTH_CONFIGURATION,
-        useValue: googleOauthConfig,
-      },
+      { provide: OAUTH_CLIENT_CONFIGURATION, useValue: googleOauthConfig },
       OauthClient,
-      CalendarService, // DI
-      PeopleService
-    ], // module services will be added here / ใส่เป็นobjectหรือclass ก็ได้
+      CalendarService,
+      PeopleService,
+    ],
     children: [
-      { path: 'authorization', component: AuthorizationPage },
+      { path: 'authorization', data: { fullPage: true }, component: AuthorizationPage },
+
       {
         path: '',
         component: GoogleRoot,
         children: [
           { path: '', redirectTo: 'events', pathMatch: 'full' },
+
           {
             path: 'events',
             children: [
               { path: '', component: EventsListPage },
-              { path: 'insert', component: EventsInsertPage },
+              {
+                path: 'insert',
+                canDeactivate: [
+                  (component: Partial<FormPage>) => {
+                    if (component.dirty?.() ?? true) {
+                      return formDirtyComfirmation();
+                    } else {
+                      return true;
+                    }
+                  },
+                ],
+                component: EventInsertPage,
+              },
             ],
           },
+
+          // ✅ people อยู่ตรงนี้ — ระดับเดียวกับ events
           {
-            path: 'contact',
+            path: 'people',
             children: [
               { path: '', component: PeopleListPage },
-              { path: 'insert', component: PeopleInsertPage }
+              { path: 'create', component: PeopleCreatePage },
             ],
-          }
+          },
         ],
       },
     ],

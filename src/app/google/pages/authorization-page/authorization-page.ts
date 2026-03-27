@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, input, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
 import { OauthClient } from '../../services/oauth.client';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-authorization-page',
@@ -10,37 +9,35 @@ import { Router } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AuthorizationPage implements OnInit {
-  private readonly client = inject(OauthClient);
-  readonly code = input<string>();
   readonly state = input<string>();
-
+  readonly code = input<string>();
   readonly error = input<string>();
   readonly error_description = input<string>();
 
-  protected readonly errorMessage = signal<string | undefined>(undefined);
+  protected errorMessage = signal<string | null>(null);
 
-  private readonly router = inject(Router);
+  private readonly oauthClient = inject(OauthClient);
 
   async ngOnInit(): Promise<void> {
+    if (typeof this.error() !== 'undefined') {
+      this.errorMessage.set(
+        `${this.error()!}${this.error_description() ? `: ${this.error_description()!}` : ''}`,
+      );
+      return;
+    }
+
+    const stateCode = this.state();
     const code = this.code();
-    const state = this.state();
-    const error = this.error();
-    const error_description = this.error_description();
 
-    if (typeof error !== 'undefined') {
-      this.errorMessage.set(`${error}: ${error_description ?? error}`);
-
-      return;
+    if (stateCode && code) {
+      try {
+        await this.oauthClient.exchangeAuthorizationCode(this.state()!, this.code()!);
+      } catch (error) {
+        console.error(error);
+        this.errorMessage.set(`${error}`);
+      }
+    } else {
+      this.errorMessage.set(`invalid_response: no state or code in query parameters`);
     }
-
-    if (typeof code === 'undefined' || typeof state === 'undefined') {
-      this.errorMessage.set(`bad response: no 'code' or 'state'`);
-      return;
-    }
-
-    const stateData = await this.client.exchangeAuthorizationCode(code, state);
-    this.router.navigateByUrl(stateData.intendedUrl, {
-      replaceUrl: true,
-    });
   }
 }

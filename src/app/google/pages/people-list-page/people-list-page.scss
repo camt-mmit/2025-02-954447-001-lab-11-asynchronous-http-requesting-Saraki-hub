@@ -1,193 +1,177 @@
-@use 'sass:color';
-
-$primary-color: #7c3aed;
-$text-main: #1e1b2e;
-$text-muted: #6b7280;
-$border-color: #e5e7eb;
-$bg-hover: #f5f3ff;
-
+/* จัด Layout หลักให้อยู่ตรงกลางหน้าจอ */
 :host {
-  display: block;
-  max-width: 650px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
-
-.header-actions {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 20px;
-
-  a {
-    text-decoration: none;
-    background: linear-gradient(135deg, $primary-color, #a78bfa);
-    color: white;
-    padding: 10px 22px;
-    border-radius: 24px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    box-shadow: 0 2px 10px rgba($primary-color, 0.3);
-    transition: all 0.2s ease;
-
-    &:hover {
-      background: linear-gradient(135deg,
-        color.adjust($primary-color, $lightness: -8%),
-        color.adjust(#a78bfa, $lightness: -8%)
-      );
-      box-shadow: 0 4px 16px rgba($primary-color, 0.4);
-      transform: translateY(-1px);
-    }
-  }
-}
-
-.search-box {
-  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  background-color: white;
-  padding: 6px 8px;
-  border: 1.5px solid $border-color;
-  border-radius: 12px;
-  transition: box-shadow 0.2s, border-color 0.2s;
-
-  &:focus-within {
-    border-color: $primary-color;
-    box-shadow: 0 0 0 3px rgba($primary-color, 0.12);
-  }
-
-  input {
-    flex: 1;
-    border: none;
-    padding: 10px 8px;
-    font-size: 1rem;
-    outline: none;
-    background: transparent;
-    color: $text-main;
-
-    &::placeholder {
-      color: #c4b5fd;
-    }
-  }
-
-  button {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &[type="button"] {
-      background-color: transparent;
-      color: $text-muted;
-      padding: 8px 12px;
-
-      &:hover {
-        background-color: #fef2f2;
-        color: #ef4444;
-      }
-    }
-
-    &[type="submit"] {
-      background-color: $bg-hover;
-      color: $primary-color;
-
-      &:hover {
-        background-color: color.adjust($bg-hover, $lightness: -4%);
-        box-shadow: 0 2px 8px rgba($primary-color, 0.15);
-      }
-    }
-  }
+  padding: 2rem;
+  background-color: #0d0d0d;
+  min-height: 100vh;
 }
 
-hr {
-  border: 0;
-  height: 1.5px;
-  background: linear-gradient(90deg, transparent, #e9d5ff, transparent);
-  margin: 24px 0;
+header {
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.contact-list {
+/* --- ปุ่ม Add Contact --- */
+._action-links {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 
-  li {
-    background: white;
-    border: 1.5px solid $border-color;
-    border-radius: 14px;
-    padding: 16px;
-    transition: all 0.2s ease;
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #f70a72;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.2s;
 
     &:hover {
-      box-shadow: 0 4px 16px rgba($primary-color, 0.1);
-      border-color: #d8b4fe;
-      transform: translateY(-1px);
+      filter: brightness(1.2);
+      transform: translateY(-2px);
     }
   }
 }
 
-.contact-item {
+/* --- ช่อง Search --- */
+._search-fieldset {
+  border: 1px solid #333;
+  border-radius: 12px;
+  background: #1a1a1a;
   display: flex;
-  align-items: flex-start;
-  gap: 16px;
+  align-items: center;
+  padding: 5px 15px;
 
-  img {
-    border-radius: 50%;
-    object-fit: cover;
-    background-color: $bg-hover;
-    border: 2px solid #e9d5ff;
+  input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 12px;
+    outline: none;
+    font-size: 1rem;
+
+    &::placeholder { color: #666; }
+  }
+
+  .app-cl-warn {
+    color: #666;
+    &:hover { color: #ff4d4d; }
   }
 }
 
-.contact-info {
+/* --- รายการผู้ติดต่อ (Accordion Style) --- */
+._person-row {
+  width: 100%;
+  max-width: 600px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &[open] {
+    border-color: #f70a72;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  }
+}
+
+._person-summary {
+  list-style: none; /* เอาลูกศรเดิมออก */
+  padding: 15px 20px;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+  user-select: none;
 
-  strong {
-    color: $text-main;
-    font-size: 1.15rem;
-    font-weight: 700;
-  }
+  &::-webkit-details-marker { display: none; } /* สำหรับ Safari */
 
-  .email {
-    color: $primary-color;
-    font-size: 0.95rem;
-    margin-bottom: 4px;
-    opacity: 0.8;
-  }
-
-  p {
-    margin: 2px 0 0;
-    font-size: 0.85rem;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-
-    .phone-type {
-      color: $text-muted;
-      text-transform: capitalize;
-      font-weight: 600;
-      min-width: 50px;
-    }
-
-    .phone-value {
-      color: $text-main;
-    }
-  }
+  &:hover { background: #222; }
 }
 
-.error {
-  color: #ef4444;
-  background-color: #fef2f2;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 1.5px solid #fecaca;
+/* --- Avatar (วงกลมรูปภาพหรือชื่อย่อ) --- */
+._avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid #444;
+}
+
+._avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+._avatar-initials {
+  color: #f70a72;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+._person-name {
+  color: #fff;
   font-weight: 500;
+  font-size: 1.1rem;
+}
+
+/* --- ส่วนรายละเอียดเมื่อคลิกเปิด (Inside Accordion) --- */
+._person-detail {
+  padding: 0 20px 20px 80px; /* ดันเข้าไปให้ตรงกับชื่อ */
+  border-top: 1px solid #222;
+  margin-top: -5px;
+  padding-top: 15px;
+  animation: slideDown 0.3s ease-out;
+}
+
+._detail-label {
+  color: #f70a72;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 15px 0 5px 0;
+  font-weight: bold;
+}
+
+._detail-item {
+  color: #ccc;
+  font-size: 0.95rem;
+  margin: 5px 0;
+  display: flex;
+  gap: 10px;
+}
+
+._detail-type {
+  color: #666;
+  min-width: 60px;
+}
+
+/* --- สถานะต่างๆ --- */
+._status-container, ._error-container {
+  text-align: center;
+  margin-top: 3rem;
+  color: #666;
+}
+
+._status-loading { color: #f70a72; }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

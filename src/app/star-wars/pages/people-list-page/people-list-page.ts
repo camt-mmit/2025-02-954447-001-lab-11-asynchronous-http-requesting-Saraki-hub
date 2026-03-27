@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -6,16 +7,14 @@ import {
   input,
   linkedSignal,
 } from '@angular/core';
-import { ResultsListParams } from '../../types';
-import { disabled, form, FormField, submit } from '@angular/forms/signals';
-import { peopleListResource, purnEmptyProperties } from '../../helpers';
+import { FormField, disabled, form, submit } from '@angular/forms/signals';
 import { Router, RouterLink } from '@angular/router';
-import { DecimalPipe } from '@angular/common';
 import { PeopleList } from '../../components/people-list/people-list';
+import { peopleListResource, purnEmptyProperties } from '../../helpers';
 
 @Component({
   selector: 'app-people-list-page',
-  imports: [FormField, DecimalPipe, RouterLink, PeopleList],
+  imports: [PeopleList, FormField, RouterLink, DecimalPipe],
   templateUrl: './people-list-page.html',
   styleUrl: './people-list-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,46 +22,44 @@ import { PeopleList } from '../../components/people-list/people-list';
 export class PeopleListPage {
   readonly search = input<string>();
   readonly page = input<string>();
-  private readonly params = computed<Required<ResultsListParams>>(() => ({
-    search: this.search() ?? '',
-    page: this.page() ?? '',
-  }));
 
-  protected readonly currentPage = computed(() => Number(this.page() ?? 1));
+  protected readonly params = computed(
+    () =>
+      ({
+        search: this.search() ?? '',
+        page: this.page() ?? '',
+      }) as const,
+  );
 
-  protected readonly previousPage = computed(() => {
-    if (this.resource.hasValue()) {
-      const urlText = this.resource.value().previous;
+  protected readonly resource = peopleListResource(() =>
+    purnEmptyProperties(this.params()),
+  ).asReadonly();
 
-      if (urlText === null) {
-        return null;
-      }
+  protected readonly currentPage = computed(() => +(this.params().page ? this.params().page : '1'));
 
-      const url = new URL(urlText);
-      return url.searchParams.get('page'); //searchParams เป็น property ของ URL Object ที่จะดึงเอาเฉพาะส่วนที่อยู่หลังเครื่องหมาย ? ผลลัพธ์ที่ได้ออกมาจากคำสั่งนี้ก็คือ String คำว่า '2'
-    } else {
-      return null;
-    }
-  });
+  protected readonly previousPage = computed(() =>
+    this.resource.hasValue() && this.resource.value().previous
+      ? new URL(this.resource.value().previous!).searchParams.get('page')
+      : null,
+  );
 
   protected readonly nextPage = computed(() =>
     this.resource.hasValue() && this.resource.value().next
       ? new URL(this.resource.value().next!).searchParams.get('page')
       : null,
   );
-  private readonly router = inject(Router);
 
-  protected readonly resource = peopleListResource(() => purnEmptyProperties(this.params()));
   protected readonly form = form(
-    linkedSignal(() => ({ search: this.search() ?? '' })),
+    linkedSignal(() => ({ search: this.params().search }) as const),
     (path) => {
       disabled(path, () => this.resource.isLoading());
     },
   );
 
+  private readonly router = inject(Router);
+
   protected onSearch(): void {
     submit(
-      //รับค่า (Arguments) 2 ตัวหลักๆ 1.ตัวฟอร์ม 2.แอ็กชันที่จะให้ทำ
       this.form,
       async (form) =>
         void this.router.navigate([], {

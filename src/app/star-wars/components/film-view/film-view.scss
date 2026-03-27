@@ -1,0 +1,112 @@
+/* จัดคอนเทนเนอร์หลักให้กึ่งกลาง 1200px */
+.film-container {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 30px;
+  background: rgba(26, 25, 37, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  color: aliceblue;
+}
+
+/* จัดกลุ่มข้อมูล (Label & Value) */
+.info-group {
+  margin-bottom: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  .label {
+    color: #95a5a6;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    border-left: 3px solid #f1c40f; /* เส้นขีดสีทองหน้าหัวข้อ */
+    padding-left: 10px;
+  }
+
+  .value {
+    font-size: 1.2rem;
+    color: #fff;
+    /* ใส่เงาตัวหนังสือตามที่คุณชอบ */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    i.small { font-size: 18px; color: #3498db; }
+  }
+}
+
+/* ตกแต่ง Opening Crawl ให้ดูเหมือนในหนัง */
+.crawl-text {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 25px;
+  border-radius: 8px;
+  border: 1px solid rgba(241, 196, 15, 0.2);
+  color: #f1c40f; /* สีเหลืองทอง Star Wars */
+  font-family: 'News Cycle', sans-serif;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 600;
+  text-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
+  margin-top: 10px;
+}
+
+/* จัดการลิสต์ตัวละครและดาวเคราะห์ */
+.list-content {
+  ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+    width: 100%;
+
+    li a {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      color: #3498db;
+      text-decoration: none;
+      transition: all 0.2s;
+
+      &:hover {
+        background: rgba(52, 152, 219, 0.15);
+        color: #fff;
+        transform: translateX(5px);
+      }
+
+      i.x-small { font-size: 14px; opacity: 0.6; }
+    }
+  }
+}
+
+/* ส่วน Footer ด้านล่าง */
+.footer-info {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+
+  strong { color: #bdc3c7; margin-right: 5px; }
+}
+
+/* สถานะ Loading */
+span:contains("Loading") {
+  color: #3498db;
+  font-style: italic;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse { 50% { opacity: 0.5; } }

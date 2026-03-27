@@ -1,23 +1,30 @@
+import { AsyncPipe, DatePipe } from '@angular/common';
+import { httpResource } from '@angular/common/http';
 import {
   ChangeDetectionStrategy,
   Component,
+  Resource,
   computed,
+  effect,
   input,
   linkedSignal,
-  Resource,
   resource,
 } from '@angular/core';
-import { Film, Person, Planet } from '../../types';
-import { DatePipe } from '@angular/common';
-import { fetchResource } from '../../helpers';
-import { httpResource } from '@angular/common/http';
-import { applyEach, createManagedMetadataKey, form, metadata } from '@angular/forms/signals';
-import { ExtractIdPipe } from '../../pipes/extract-id-pipe-pipe';
+import {
+  FieldContext,
+  applyEach,
+  createManagedMetadataKey,
+  form,
+  metadata,
+} from '@angular/forms/signals';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { fetchResource } from '../../helpers';
+import { ExtractIdPipe } from '../../pipes/extract-id-pipe';
+import { films, Person, Planet } from '../../types';
 
 @Component({
   selector: 'app-person-view',
-  imports: [DatePipe, ExtractIdPipe, RouterLink],
+  imports: [RouterLink, AsyncPipe, DatePipe, ExtractIdPipe],
   templateUrl: './person-view.html',
   styleUrl: './person-view.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,42 +33,66 @@ export class PersonView {
   readonly data = input.required<Person>();
   readonly moduleRoute = input.required<ActivatedRoute>();
 
-  protected readonly homeWorld$ = computed(() => fetchResource<Planet>(this.data().homeworld));
+/**
+   * ข้อมูลแบบ Observable/Promise
+   * ใช้ computed เพื่อสร้าง object ที่เก็บผลลัพธ์การดึงข้อมูลดาว (homeworld)
+   * และรายการหนัง (films) โดยเรียกใช้ helper fetchResource
+   */
+  protected readonly asyncData = computed(() => {
+    const { homeworld, films } = this.data();
 
-  protected readonly homeWorldResource = resource({
-    params: () => this.data().homeworld,
-    loader: async ({ params }) => fetchResource<Planet>(params),
+    return {
+      homeworld$: fetchResource<Planet>(homeworld),
+      films: films.map((url) => fetchResource<films>(url)),
+    } as const;
   });
 
-  protected readonly homeWorldHttpResource = httpResource<Planet>(() =>
-    this.data().homeworld
-      ? {
-          url: this.data().homeworld!,
-          cache: 'force-cache',
-        } // ถ้ามีแค่url ส่งเป็นstringเฉยๆได้ แต่ถ้ามีมากกว่าต้องส่งก้อนrequest
-      : undefined,
-  );
+/**
+   * ทรัพยากรข้อมูลดาวบ้านเกิด (Homeworld)
+   * ใช้ httpResource (Angular 19+) เพื่อดึงข้อมูล Planet จาก URL อัตโนมัติ
+   * เมื่อค่า homeworld ใน data เปลี่ยนแปลง
+   */
+  protected readonly homeworldResource = httpResource<Planet>(
+    () => this.data().homeworld ?? undefined,
+  ).asReadonly();
+/**
+   * ทรัพยากรรายการภาพยนตร์ (Films List)**/
 
-  protected readonly films$ = computed(() =>
-    this.data().films.map((url) => fetchResource<Film>(url)),
-  );
-
-  protected readonly filmResource = resource({
+  protected readonly filmsResource = resource({
     params: () => this.data().films,
-    loader: async ({ params }) => await Promise.all(params.map((url) => fetchResource<Film>(url))),
-  });
+    loader: async ({ params, abortSignal }) =>
+      await Promise.all(params.map(async (url) => await fetchResource<films>(url, abortSignal))),
+  }).asReadonly();
+/**
+   * กุญแจสำหรับจัดการ Metadata ของหนังแต่ละเรื่อง**/
 
-  protected readonly resourceKey = createManagedMetadataKey<Resource<Film | undefined>, string>(
-    (url) => {
-      //Note: memory leaks when component is reused
-      return httpResource(url);
-    },
-  );
-  protected readonly form = form(
-    linkedSignal(() => ({ films: this.data().films }) as const),
+  protected readonly filmResourceKey = createManagedMetadataKey<
+    Resource<films | undefined>,
+    FieldContext<string>
+  >((ctx) => {
+    const resource = httpResource<films>(() => ctx()!.value());
+
+    const guardEffectRef = effect((onCleanup) => {
+      ctx()!.fieldTree();
+
+      onCleanup(() => {
+        guardEffectRef.destroy();
+        resource.destroy();
+      });
+    });
+
+    return resource.asReadonly();
+  });
+/**
+   * ฟอร์มรายการภาพยนตร์ (Dynamic Films Form)
+   * ใช้ form() ร่วมกับ linkedSignal เพื่อซิงค์ข้อมูลหนังจาก Input
+   * และมีการใช้ applyEach เพื่อผูก filmResourceKey เข้ากับหนังทุกเรื่องในรายการ
+   */
+  protected readonly filmsForm = form(
+    linkedSignal(() => this.data().films),
     (path) => {
-      applyEach(path.films, (eachPath) => {
-        metadata(eachPath, this.resourceKey, ({ value }) => value());
+      applyEach(path, (eachPath) => {
+        metadata(eachPath, this.filmResourceKey, (ctx) => ctx);
       });
     },
   );

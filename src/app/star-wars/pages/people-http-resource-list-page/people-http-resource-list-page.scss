@@ -1,0 +1,149 @@
+/* จัดกึ่งกลางหน้าจอและคุมความกว้าง 1200px */
+header, ul {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 95%;
+}
+
+header {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 30px;
+
+  /* ส่วนช่องค้นหา Search */
+  ._search-fieldset {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid #576afd;
+    border-radius: 50px;
+    padding: 5px 25px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.2);
+
+    &:focus-within {
+      box-shadow: 0 0 25px rgba(52, 152, 219, 0.5);
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: aliceblue;
+      padding: 15px;
+      font-size: 1.1rem;
+      /* ใส่ Text Shadow ตามที่คุณชอบ */
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+
+      &::placeholder {
+        color: rgba(240, 248, 255, 0.4);
+      }
+    }
+
+    .app-cl-warn {
+      background: transparent;
+      border: none;
+      color: #ff4d4d;
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      transition: transform 0.2s;
+
+      &:hover {
+        transform: scale(1.1);
+        text-shadow: 0 0 8px rgba(255, 77, 77, 0.6);
+      }
+    }
+  }
+
+  /* ส่วน Navigation (Items count & Pagination) */
+  ._page-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    background: rgba(44, 47, 80, 0.7);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    color: aliceblue;
+
+    span {
+      font-size: 1rem;
+      letter-spacing: 0.5px;
+
+      b { color: #95a5a6; font-weight: 500; }
+
+      .app-cl-number {
+        color: #f1c40f; /* สีเหลือง Star Wars */
+        font-weight: bold;
+        margin: 0 5px;
+        text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+      }
+    }
+
+    /* ปุ่มลูกศรซ้าย-ขวา */
+    .app-cmp-nav {
+      display: flex;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      gap: 20px;
+
+      a {
+        color: #3498db;
+        text-decoration: none;
+        font-size: 2.5rem; /* ขนาดลูกศรใหญ่ขึ้นเพื่อให้กดง่าย */
+        line-height: 1;
+        transition: all 0.3s ease;
+
+        &:hover:not([routerLink="null"]) {
+          color: #f1c40f;
+          transform: scale(1.3);
+          text-shadow: 0 0 15px rgba(241, 196, 15, 0.8);
+        }
+
+        &[routerLink="null"] {
+          opacity: 0.2;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+
+
+/* เปลี่ยนรายการ <ul> <li> ให้เป็น Grid Card */
+ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+  margin-bottom: 40px;
+
+  li {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    color: aliceblue;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+    cursor: default;
+
+    /* เอฟเฟกต์ตอนเอาเมาส์มาชี้ */
+    &:hover {
+      background: rgba(52, 152, 219, 0.15);
+      border-color: #3498db;
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+  }
+}

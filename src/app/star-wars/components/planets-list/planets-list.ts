@@ -1,17 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject, Injector, input } from '@angular/core';
-import { ExtractIdPipe } from '../../pipes/extract-id-pipe';
-import { RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { Planet } from '../../types';
+import { RouterLink } from '@angular/router';
+import { ExtractIdPipe } from '../../pipes/extract-id-pipe';
 
 @Component({
   selector: 'app-planets-list',
-  imports: [RouterLink,ExtractIdPipe],
+  imports: [RouterLink, ExtractIdPipe],
   templateUrl: './planets-list.html',
   styleUrl: './planets-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlanetsList {
-readonly data = input.required<readonly Planet[]>();
-  
-  private readonly injector = inject(Injector);
+  readonly data = input.required<readonly Planet[]>();
 }

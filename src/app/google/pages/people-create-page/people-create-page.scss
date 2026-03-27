@@ -1,0 +1,171 @@
+/* จัดโครงสร้างฟอร์มให้อยู่ตรงกลางหน้าจอ */
+form {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+  min-height: 80vh;
+}
+
+fieldset {
+  width: 100%;
+  max-width: 650px; /* คุมความกว้างให้พอดีสายตา */
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ส่วนหัวของฟอร์ม (ถ้ามี) */
+legend {
+  color: #f70a72;
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding: 0 10px;
+}
+
+/* การจัดแถวของชื่อ-นามสกุล */
+._field-row {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+._field-label {
+  color: #aaa;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+._required {
+  color: #f70a72;
+}
+
+/* ตกแต่ง Input ทั้งหมด */
+input[type="text"],
+input[type="email"],
+input[type="tel"] {
+  background: #0d0d0d;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 12px 15px;
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s;
+
+  &:focus {
+    border-color: #f70a72;
+    box-shadow: 0 0 0 3px rgba(247, 10, 114, 0.15);
+  }
+}
+
+/* ส่วนของ Email และ Phone (Section Header) */
+._section-header {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  border-top: 1px solid #333;
+  padding-top: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+._add-btn {
+  background-color: rgba(247, 10, 114, 0.1) !important;
+  color: #f70a72 !important;
+  border: 1px dashed #f70a72 !important;
+  padding: 8px 16px !important;
+  border-radius: 20px !important;
+  font-size: 0.9rem !important;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f70a72 !important;
+    color: white !important;
+  }
+}
+
+/* แถวข้อมูล Email/Phone ที่เพิ่มเข้ามา */
+._entry-row {
+  background: #252525;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+._entry-fields {
+  flex: 1;
+  display: flex;
+  gap: 12px;
+}
+
+._field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  &._flex-grow {
+    flex: 2;
+  }
+}
+
+._type-input {
+  width: 100px; /* ช่อง Type ให้เล็กลงหน่อย */
+}
+
+/* ปุ่มลบ (Trash icon) */
+._remove-btn {
+  background: transparent !important;
+  color: #666 !important;
+  padding: 10px !important;
+
+  &:hover {
+    color: #ff4d4d !important;
+  }
+}
+
+/* แถบปุ่ม Save/Cancel ด้านล่าง */
+._form-actions-bar {
+  margin-top: 2.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+
+  button {
+    padding: 12px 24px !important;
+    border-radius: 8px !important;
+    font-weight: bold !important;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+}
+
+/* กล่องแจ้งเตือน Error */
+._form-errors {
+  margin-top: 1.5rem;
+  background: rgba(255, 77, 77, 0.1);
+  border: 1px solid #ff4d4d;
+  border-radius: 8px;
+  padding: 1rem;
+  color: #ff8a80;
+  list-style: inside;
+  font-size: 0.9rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

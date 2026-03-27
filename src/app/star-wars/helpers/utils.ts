@@ -1,11 +1,5 @@
-export function purnEmptyProperties<T extends object>(
-  data: T,
-): {
-  [K in keyof T]?: NonNullable<T[K]>;
-} {
-  return Object.fromEntries(Object.entries(data).filter(([, value]) => !!value)) as {
-    [K in keyof T]?: NonNullable<T[K]>;
-  };
+export function asReadonly<T>(data: T[]): readonly T[] {
+  return data;
 }
 
 export function extractId(url: string) {
@@ -15,4 +9,14 @@ export function extractId(url: string) {
       .reverse()
       .find((path) => path !== '') ?? null
   );
+}
+
+export function purnEmptyProperties<T extends Record<string, unknown>>(
+  data: T,
+): Partial<{
+  [K in keyof T]: NonNullable<T[K]>;
+}> {
+  return Object.fromEntries(Object.entries(data).filter(([, value]) => !!value)) as Partial<{
+    [K in keyof T]: NonNullable<T[K]>;
+  }>;
 }

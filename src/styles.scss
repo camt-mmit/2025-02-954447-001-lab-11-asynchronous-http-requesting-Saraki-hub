@@ -1,10 +1,55 @@
-/* You can add global styles to this file, and also import other style files */
+/* src/styles.scss */
 
-:root {
-  font-family: serif;
-  font-size: 16px;
+/* 1.1 พื้นฐานของหน้าเว็บ */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #0d0d0d; /* พื้นหลังดำสนิทเพื่อให้ฟอร์ม/ลิสต์เด่น */
+  color: #eeeeee;            /* ตัวหนังสือขาวนวล อ่านสบายตา */
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; /* ฟอนต์ดูโมเดิร์นขึ้น */
 }
 
-.is-active {
-  background-color: rgb(167, 167, 167);
+/* 1.2 คุมความกว้างของเนื้อหาหลักไม่ให้เต็มจอ */
+/* สมมติว่าทุกหน้าถูกหุ้มด้วย <main> หรือ div container */
+main, .main-container {
+  max-width: 1200px; /* ความกว้างสูงสุดของหน้า */
+  margin: 0 auto;    /* จัดให้อยู่ตรงกลางหน้าจอแนวนอน */
+  padding: 0 2rem;   /* เพิ่มพื้นที่ว่างด้านซ้ายขวาไม่ให้ติดขอบจอ */
+  box-sizing: border-box;
+}
+
+/* 1.3 สไตล์ปุ่ม Global (ตามรูปที่ 5 และ 6) */
+.app-cmp-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+
+  /* สีชมพู Angular สำหรับปุ่มหลัก (app-cl-filled) */
+  &.app-cl-filled {
+    background-color: #f70a72 !important;
+    color: white !important;
+  }
+
+  /* สีแดงสำหรับปุ่ม Cancel/Logout (app-cl-warn) */
+  &.app-cl-warn {
+    background-color: transparent !important;
+    color: #ff4d4d !important;
+    border: 1px solid #444 !important;
+
+    &:hover {
+      background-color: rgba(255, 77, 77, 0.1) !important;
+      border-color: #ff4d4d !important;
+    }
+  }
+
+  &:hover {
+    transform: translateY(-2px); /* ยกตัวขึ้นจิดนึงเวลา Hover */
+    filter: brightness(1.1);
+  }
 }

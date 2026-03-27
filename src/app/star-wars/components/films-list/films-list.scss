@@ -1,0 +1,78 @@
+/* จัดการตารางหลัก */
+table {
+  width: 100%;
+  max-width: 1200px;
+  margin: 20px auto;
+  border-collapse: separate;
+  border-spacing: 0 10px; /* เพิ่มระยะห่างระหว่างแถว */
+  color: aliceblue;
+  text-align: left;
+
+  /* หัวตาราง */
+  thead {
+    tr {
+      th {
+        padding: 15px 20px;
+        color: #95a5a6;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        letter-spacing: 1.5px;
+        border-bottom: 2px solid #3498db; /* เส้นใต้สีฟ้า */
+      }
+    }
+  }
+
+  /* เนื้อหาตาราง */
+  tbody {
+    tr {
+      background: rgba(255, 255, 255, 0.03);
+      transition: all 0.3s ease;
+
+      /* ทำให้มุมโค้งมนสำหรับแต่ละแถว */
+      td:first-child { border-radius: 10px 0 0 10px; }
+      td:last-child { border-radius: 0 10px 10px 0; }
+
+      td {
+        padding: 20px;
+        font-size: 1.1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+        /* ใส่ Text Shadow ให้ตัวเลขและตัวหนังสือ */
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+
+        /* สไตล์ของ Link ชื่อหนัง */
+        a {
+          color: #f1c40f; /* สีเหลือง Star Wars */
+          text-decoration: none;
+          font-weight: 600;
+          transition: 0.2s;
+
+          &:hover {
+            color: #fff;
+            text-shadow: 0 0 8px rgba(241, 196, 15, 0.8);
+          }
+        }
+      }
+
+      /* เอฟเฟกต์เมื่อ Hover ทั้งแถว */
+      &:hover {
+        background: rgba(52, 152, 219, 0.15);
+        transform: scale(1.01); /* ขยายใหญ่ขึ้นเล็กน้อย */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+
+        td {
+          border-color: #3498db;
+        }
+      }
+    }
+  }
+}
+
+/* ปรับแต่งคอลัมน์ Episode ID ให้ตัวเลขอยู่ตรงกลาง */
+th:nth-child(2), td:nth-child(2) {
+  text-align: center;
+  font-family: 'Courier New', Courier, monospace; /* ใช้ฟอนต์แบบรหัสคอมพิวเตอร์ */
+  font-weight: bold;
+  color: #3498db;
+}

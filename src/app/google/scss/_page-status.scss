@@ -1,0 +1,9 @@
+/* ไฟล์ที่คุณคุมหน้านี้ (เช่น _page-status.scss หรือ google-root.scss) */
+._page-status {
+  display: flex;
+  justify-content: center; /* จัดกึ่งกลางแนวนอน */
+  align-items: center;     /* จัดกึ่งกลางแนวตั้ง */
+  width: 100%;
+  min-height: 200px;       /* ปรับความสูงตามความเหมาะสม */
+  margin-top: 20px;
+}

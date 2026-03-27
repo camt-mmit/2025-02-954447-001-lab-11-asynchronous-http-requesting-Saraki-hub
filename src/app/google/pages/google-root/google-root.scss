@@ -1,115 +1,207 @@
-@use 'sass:color';
-
-$primary-color: #7c3aed;
-$active-bg: #ede9fe;
-$text-main: #1e1b2e;
-$text-muted: #6b7280;
-$border-color: #e5e7eb;
-$danger-color: #ef4444;
-
-:host {
-  display: block;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 24px;
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-}
-
-div {
+/* Container หลักสำหรับการจัดการสถานะหน้าจอ */
+._page-status {
   display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
-  flex-direction: row-reverse;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1.5px solid $border-color;
-  flex-wrap: wrap;
-  gap: 16px;
-
-  button {
-    background-color: transparent;
-    color: $danger-color;
-    border: 1.5px solid $danger-color;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      background-color: #fef2f2;
-      box-shadow: 0 2px 8px rgba($danger-color, 0.15);
-    }
-  }
+  min-height: 80vh;
+  flex-direction: column;
+  background-color: #000000; /* พื้นหลังดำ */
 }
 
-.google-nav {
+/* --- Navigation Bar --- */
+nav {
+  background-color: #000000; /* พื้นหลังดำ */
+  border-bottom: 1px solid #333333; /* เส้นขอบเทาเข้ม */
+  padding: 0 1rem;
   display: flex;
-  align-items: center;
+  justify-content: center;
 }
 
-.google-list {
+.app-cmp-nav {
   list-style: none;
-  padding: 0;
-  margin: 0;
   display: flex;
-  gap: 8px;
+  gap: 2.5rem; /* เพิ่มระยะห่างอีกนิด */
+  margin: 0;
+  padding: 0;
 }
 
-.list {
-  display: inline-flex;
+.app-cmp-nav li {
+  padding: 1rem 0;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
 
-  a {
-    text-decoration: none;
-    color: $text-muted;
-    font-weight: 500;
-    padding: 8px 16px;
-    border-radius: 20px;
-    transition: all 0.2s ease;
+.app-cmp-nav a {
+  text-decoration: none;
+  color: #c9c9c9; /* สีตัวอักษรเทาอ่อน */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  font-size: 35px;
+font-family:Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif ;
+}
 
-    &:hover {
-      background-color: #f5f3ff;
-      color: $text-main;
-    }
+/* สถานะเมื่อเมนูนั้นถูกเลือก (Active Route) */
+.app-st-active {
+  border-bottom-color: #f70a72 !important; /* สีเน้นชมพู/แดง แบบในโลโก้ */
+}
 
-    &.is-active {
-      background-color: $active-bg;
-      color: $primary-color;
-      font-weight: 600;
-    }
+.app-st-active a {
+  color: #ffffff; /* ตัวอักษรขาวเมื่อ Active */
+}
+
+.app-st-active .material-symbols-outlined {
+    color: #f70a72; /* สีไอคอนเมื่อ Active */
+}
+
+/* --- Google User Bar (Top Right) --- */
+._google-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: #111111; /* พื้นหลังเทาเข้มเกือบดำ */
+  border: 1px solid #333333; /* ขอบเทาเข้ม */
+  border-radius: 50px;
+  width: fit-content;
+  margin: 1.5rem 1.5rem 1.5rem auto; /* ชิดขวาและเว้นระยะ */
+  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.05); /* เงาสว่างบางๆ */
+}
+
+._avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #333333;
+}
+
+._google-bar span {
+  font-size: 14px;
+  color: #f1f3f4; /* ตัวอักษรขาวเทา */
+  font-weight: 500;
+}
+
+/* --- Buttons --- */
+.app-cmp-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.app-cmp-button:hover {
+  background-color: #2a2a2a; /* พื้นหลังเมื่อ Hover */
+}
+
+.app-cl-warn {
+  color: #ff3c4d; /* สีแดงสำหรับ Logout ที่สว่างขึ้นในธีมมืด */
+}
+
+/* --- Loading Animation (White on Dark) --- */
+._status-loading {
+  color: #ffffff; /* ตัวอักษรโหลดขาว */
+  font-family: sans-serif;
+  letter-spacing: 1px;
+  position: relative;
+}
+
+._status-loading::after {
+  content: "...";
+  display: inline-block;
+  width: 12px;
+  animation: loading-dots 1.5s infinite;
+}
+
+@keyframes loading-dots {
+  0% { content: "."; }
+  33% { content: ".."; }
+  66% { content: "..."; }
+}
+
+/* --- Google Sign-In Button (Keeping standard as requested in HTML, but centering it) --- */
+.gsi-material-button {
+    /* (CSS เดิมที่คุณใช้สำหรับปุ่ม) ... */
+    margin: auto; /* จัดกลาง */
+}
+
+/* จัดปุ่มให้อยู่กึ่งกลางหน้าจอทั้งแนวตั้งและแนวนอน */
+/* จัดปุ่มให้อยู่กึ่งกลางหน้าจอทั้งแนวตั้งและแนวนอน */
+
+
+/* ตกแต่งปุ่ม Google ให้ดู Modern และเข้ากับ Dark Theme */
+.gsi-material-button {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -webkit-appearance: none;
+  background-color: #1a1a1a; /* เปลี่ยนพื้นหลังปุ่มเป็นเทาเข้ม */
+  background-image: none;
+  border: 1px solid #333;    /* ขอบจางๆ */
+  border-radius: 24px;       /* ปลายโค้งมนแบบโมเดิร์น */
+  box-sizing: border-box;
+  color: #ffffff;            /* ตัวหนังสือขาว */
+  cursor: pointer;
+  font-family: 'Roboto', arial, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  height: 48px;              /* เพิ่มความสูงให้กดง่ายขึ้น */
+  letter-spacing: 0.25px;
+  outline: none;
+  overflow: hidden;
+  padding: 0 24px;
+  position: relative;
+  text-align: center;
+  transition: all 0.3s ease;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: auto;
+  min-width: min-content;
+
+  /* เพิ่มเงาจางๆ รอบปุ่ม */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+
+  &:hover {
+    background-color: #252525;
+    border-color: #f70a72;     /* ขอบเปลี่ยนเป็นสีชมพู Angular เมื่อ Hover */
+    box-shadow: 0 6px 20px rgba(247, 10, 114, 0.15);
+    transform: translateY(-2px); /* ยกตัวขึ้นเล็กน้อย */
+  }
+
+  &:active {
+    background-color: #111111;
+    transform: translateY(0);
   }
 }
 
-button {
+/* จัดการส่วนประกอบภายในปุ่ม */
+.gsi-material-button-content-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 40px auto;
-  background: linear-gradient(135deg, $primary-color, #a78bfa);
-  color: white;
-  border: none;
-  padding: 12px 32px;
-  border-radius: 24px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  box-shadow: 0 2px 10px rgba($primary-color, 0.3);
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: linear-gradient(135deg,
-      color.adjust($primary-color, $lightness: -8%),
-      color.adjust(#a78bfa, $lightness: -8%)
-    );
-    box-shadow: 0 4px 16px rgba($primary-color, 0.4);
-    transform: translateY(-1px);
-  }
+  height: 100%;
 }
 
-p {
-  text-align: center;
-  color: $text-muted;
-  margin-top: 40px;
-  font-size: 1.1rem;
-  font-style: italic;
+.gsi-material-button-icon {
+  height: 20px;
+  margin-right: 12px;
+  width: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.gsi-material-button-contents {
+  font-family: 'Roboto', arial, sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+/* ปรับสีของ Google Logo ให้สว่างขึ้นเล็กน้อยบนพื้นหลังเข้ม (ทางเลือก) */
+svg {
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.2));
 }

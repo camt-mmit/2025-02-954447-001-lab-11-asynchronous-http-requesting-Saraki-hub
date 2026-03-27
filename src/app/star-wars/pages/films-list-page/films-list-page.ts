@@ -9,7 +9,7 @@ import {
 import { ResultsListParams } from '../../types';
 import { Router, RouterLink } from '@angular/router';
 import { filmListResource, purnEmptyProperties } from '../../helpers';
-import { disabled, form, submit, FormField } from '@angular/forms/signals';
+import { disabled, form, FormField, submit } from '@angular/forms/signals';
 import { DecimalPipe } from '@angular/common';
 import { FilmsList } from '../../components/films-list/films-list';
 
@@ -39,7 +39,7 @@ export class FilmsListPage {
       }
 
       const url = new URL(urlText);
-      return url.searchParams.get('page'); //searchParams เป็น property ของ URL Object ที่จะดึงเอาเฉพาะส่วนที่อยู่หลังเครื่องหมาย ? ผลลัพธ์ที่ได้ออกมาจากคำสั่งนี้ก็คือ String คำว่า '2'
+      return url.searchParams.get('page');
     } else {
       return null;
     }
@@ -62,7 +62,6 @@ export class FilmsListPage {
 
   protected onSearch(): void {
     submit(
-      //รับค่า (Arguments) 2 ตัวหลักๆ ตัวฟอร์ม แอ็กชันที่จะให้ทำ
       this.form,
       async (form) =>
         void this.router.navigate([], {
