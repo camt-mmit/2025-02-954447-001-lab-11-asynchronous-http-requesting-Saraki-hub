@@ -1,0 +1,76 @@
+/* จัดกึ่งกลางหน้าจอและคุมความกว้าง 1200px */
+header, ul {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 95%;
+}
+
+header {
+  margin-top: 20px;
+  margin-bottom: 30px;
+
+  /* ช่องค้นหา Search (ใช้ดีไซน์เดียวกับหน้าหลักเพื่อความต่อเนื่อง) */
+  ._search-fieldset {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid #3498db;
+    border-radius: 50px;
+    padding: 8px 25px;
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.2);
+    transition: all 0.3s ease;
+
+    input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: aliceblue;
+      font-size: 1.1rem;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+
+      &::placeholder { color: rgba(255, 255, 255, 0.4); }
+    }
+
+    button {
+      background: transparent;
+      border: none;
+      color: #e74c3c;
+      font-weight: bold;
+      cursor: pointer;
+      &:hover { transform: scale(1.2); }
+    }
+  }
+}
+
+/* เปลี่ยนรายการ <ul> <li> ให้เป็น Grid Card */
+ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+  margin-bottom: 40px;
+
+  li {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    color: aliceblue;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+    cursor: default;
+
+    /* เอฟเฟกต์ตอนเอาเมาส์มาชี้ */
+    &:hover {
+      background: rgba(52, 152, 219, 0.15);
+      border-color: #3498db;
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+  }
+}

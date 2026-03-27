@@ -8,14 +8,14 @@ import {
 } from '@angular/core';
 import { ResultsListParams } from '../../types';
 import { Router, RouterLink } from '@angular/router';
-import { planetListResource, purnEmptyProperties } from '../../helpers';
-import { disabled, form, submit, FormField } from '@angular/forms/signals';
+import { planetsListResource, purnEmptyProperties } from '../../helpers';
+import { disabled, form, FormField, submit } from '@angular/forms/signals';
 import { DecimalPipe } from '@angular/common';
-import { PlanetList } from '../../components/planet-list/planet-list';
+import { PlanetsList } from '../../components/planets-list/planets-list';
 
 @Component({
   selector: 'app-planets-list-page',
-  imports: [FormField, DecimalPipe, RouterLink,PlanetList],
+  imports: [FormField, DecimalPipe, RouterLink, PlanetsList],
   templateUrl: './planets-list-page.html',
   styleUrl: './planets-list-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,7 +39,7 @@ export class PlanetsListPage {
       }
 
       const url = new URL(urlText);
-      return url.searchParams.get('page'); //searchParams เป็น property ของ URL Object ที่จะดึงเอาเฉพาะส่วนที่อยู่หลังเครื่องหมาย ? ผลลัพธ์ที่ได้ออกมาจากคำสั่งนี้ก็คือ String คำว่า '2'
+      return url.searchParams.get('page');
     } else {
       return null;
     }
@@ -52,7 +52,7 @@ export class PlanetsListPage {
   );
   private readonly router = inject(Router);
 
-  protected readonly resource = planetListResource(() => purnEmptyProperties(this.params()));
+  protected readonly resource = planetsListResource(() => purnEmptyProperties(this.params()));
   protected readonly form = form(
     linkedSignal(() => ({ search: this.search() ?? '' })),
     (path) => {
@@ -62,7 +62,6 @@ export class PlanetsListPage {
 
   protected onSearch(): void {
     submit(
-      //รับค่า (Arguments) 2 ตัวหลักๆ ตัวฟอร์ม แอ็กชันที่จะให้ทำ
       this.form,
       async (form) =>
         void this.router.navigate([], {

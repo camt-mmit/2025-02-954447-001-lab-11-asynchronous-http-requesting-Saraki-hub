@@ -1,0 +1,116 @@
+/* จัดคอนเทนเนอร์หลักให้กึ่งกลาง 1200px */
+header, app-planets-list, ._error-message {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 95%;
+}
+
+header {
+  margin-top: 40px;
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  /* ตกแต่งช่อง Search */
+  fieldset {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid #2ecc71; /* ใช้สีเขียวแบบเรดาร์ดาวเคราะห์ */
+    border-radius: 50px;
+    padding: 5px 20px;
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.2);
+    transition: all 0.3s ease;
+
+    &:focus-within {
+      box-shadow: 0 0 25px rgba(46, 204, 113, 0.4);
+      border-color: #f1c40f;
+    }
+
+    input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: aliceblue;
+      padding: 12px;
+      font-size: 1.1rem;
+      /* ใส่เงาตัวหนังสือตามที่คุณชอบ */
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.3);
+      }
+    }
+
+    button {
+      background: transparent;
+      border: none;
+      color: #e74c3c;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1.2rem;
+      &:hover { transform: scale(1.2); }
+    }
+  }
+
+  /* แถบข้อมูลจำนวนดาวและเลขหน้า */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background: rgba(44, 62, 80, 0.6);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    span {
+      font-size: 1rem;
+      color: aliceblue;
+
+      b {
+        color: #95a5a6;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+      }
+
+      span:not([class]) {
+        color: #f1c40f; /* สีเหลืองทอง */
+        font-weight: bold;
+        text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+      }
+    }
+
+    /* ปุ่มลูกศร < > */
+    ul {
+      display: flex;
+      list-style: none;
+      gap: 20px;
+      padding: 0;
+      margin: 0;
+
+      li a {
+        color: #2ecc71;
+        text-decoration: none;
+        font-size: 1.8rem;
+        font-weight: bold;
+        transition: 0.3s;
+
+        &:hover:not([routerLink="null"]) {
+          color: #f1c40f;
+          transform: scale(1.3);
+          text-shadow: 0 0 15px rgba(241, 196, 15, 0.8);
+        }
+
+        &[routerLink="null"] {
+          opacity: 0.2;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}

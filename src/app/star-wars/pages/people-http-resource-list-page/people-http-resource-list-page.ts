@@ -1,9 +1,9 @@
 import { httpResource } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, input, linkedSignal } from '@angular/core';
-import { disabled, form, FormField, submit } from '@angular/forms/signals';
-import { Person, ResultsList } from '../../types';
+import { FormField, disabled, form, submit } from '@angular/forms/signals';
 import { Router } from '@angular/router';
 import { purnEmptyProperties } from '../../helpers';
+import { Person, ResultsList } from '../../types';
 
 @Component({
   selector: 'app-people-http-resource-list-page',
@@ -13,20 +13,24 @@ import { purnEmptyProperties } from '../../helpers';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PeopleHttpResourceListPage {
-  readonly searchN = input<string>(); //must same as Query string
-  private readonly router = inject(Router);
+  readonly search = input<string>();
 
-  protected readonly resource = httpResource<ResultsList<Person>>(() => ({
+protected readonly resource = httpResource<ResultsList<Person>>(() => {
+  const searchTerm = this.search();
+  return {
     url: 'https://swapi.dev/api/people',
-    params: this.searchN() ? { search: this.searchN()! } : {},
-  })).asReadonly();
-
+    // ตรวจสอบว่ามีค่า search หรือไม่ ถ้ามีให้ส่งไปใน params
+    params: searchTerm ? { search: searchTerm } : undefined
+  };
+});
   protected readonly form = form(
-    linkedSignal(() => ({ searchN: this.searchN() ?? '' })),
+    linkedSignal(() => ({ search: this.search() ?? '' })),
     (path) => {
       disabled(path, () => this.resource.isLoading());
     },
   );
+
+  private readonly router = inject(Router);
 
   protected onSearch(): void {
     submit(
@@ -40,7 +44,7 @@ export class PeopleHttpResourceListPage {
   }
 
   protected clearSearch(): void {
-    this.form.searchN().value.set('');
+    this.form.search().value.set('');
     this.onSearch();
   }
 }

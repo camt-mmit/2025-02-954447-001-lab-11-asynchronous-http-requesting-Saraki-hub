@@ -1,0 +1,52 @@
+.app-cmp-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  list-style: none;
+  background-color: #0b0d17;/* สีน้ำเงินเข้มสไตล์ Space */
+  padding: 15px;
+  margin: 0;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+
+  li {
+    margin: 0 20px;
+
+    a {
+      text-decoration: none;
+      color: #ecf0f1; /* สีขาวนวล */
+      display: flex;
+      align-items: center;
+      gap: 8px; /* ระยะห่างระหว่างไอคอนกับข้อความ */
+      font-weight: 500;
+      transition: all 0.3s ease;
+
+      i.material-symbols-outlined {
+        font-size: 24px;
+      }
+
+      &:hover {
+        color: #3498db; /* เปลี่ยนเป็นสีฟ้าเมื่อเอาเมาส์วาง */
+        transform: translateY(-2px); /* ยกตัวขึ้นเล็กน้อย */
+      }
+    }
+
+    /* สไตล์เมื่อเมนูนั้นถูกเลือก (Active) */
+    &.app-st-active {
+      a {
+        color: #6f89ff; /* สีเหลืองทองแบบโลโก้ Star Wars */
+        border-bottom: 2px solid #8578ff;
+        padding-bottom: 4px;
+      }
+    }
+  }
+}
+
+/* ปรับแต่งส่วนของเนื้อหาที่แสดงผ่าน router-outlet */
+.router-outlet-container {
+  padding: 20px;
+  margin-top: 20px;
+  background-color: #f9f9f9;
+  min-height: 80vh;
+}

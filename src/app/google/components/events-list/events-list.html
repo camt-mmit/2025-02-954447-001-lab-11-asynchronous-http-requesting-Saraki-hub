@@ -1,8 +1,21 @@
-<ul class="event-list">
-  @for (item of items(); track item) {
-    <li class="event-item">
-      <span class="event-dot"></span>
-      <span class="event-summary">{{ item.summary }}</span>
-    </li>
-  }
-</ul>
+@if (data().length > 0) {
+  <ul class="_data-list">
+    @for (item of data(); track item) {
+      <li>
+        <details class="_details">
+          <summary>
+            <span>{{ item.summary }}</span
+            ><br />
+            <small>{{ item.start | extractNestedDate | date: 'medium' }}</small>
+          </summary>
+          <dl>
+            <dt>Description</dt>
+            <dd [innerHTML]="item.description"></dd>
+          </dl>
+        </details>
+      </li>
+    }
+  </ul>
+} @else {
+  <p class="_empty-message">Not Found!!</p>
+}

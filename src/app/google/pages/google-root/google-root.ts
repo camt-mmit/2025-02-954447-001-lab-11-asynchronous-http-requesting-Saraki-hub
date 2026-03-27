@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { OauthClient } from '../../services/oauth.client';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { OauthClient } from '../../services/oauth.client';
 
 @Component({
   selector: 'app-google-root',
@@ -10,12 +10,21 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GoogleRoot {
-  private readonly client = inject(OauthClient);
-  protected readonly accessTokenResource = this.client.accessTokenDataResource();
+  private readonly oauthClient = inject(OauthClient);
 
-  protected async login(): Promise<void> {
-    const url = await this.client.getAuthorizationCodeUrl(
-      ['profile', 'email', 'openid', 'https://www.googleapis.com/auth/calendar.events', 'https://www.googleapis.com/auth/contacts'],
+  protected readonly accessTokenData = this.oauthClient.accessTokenDataResource();
+
+  protected readonly idTokenClaims = this.oauthClient.idTokenClaimsResource();
+
+   protected async signIn(): Promise<void> {
+    const url = await this.oauthClient.getAuthorizationCodeUrl(
+      [
+        'openid',
+        'profile',
+        'email',
+        'https://www.googleapis.com/auth/calendar.events',
+        'https://www.googleapis.com/auth/contacts',
+      ],
       {
         prompt: 'consent',
         access_type: 'offline',
@@ -25,7 +34,7 @@ export class GoogleRoot {
     location.href = `${url}`;
   }
 
-  protected async logout(): Promise<void> {
-    await this.client.clearToken();
+  protected async signOut(): Promise<void> {
+    await this.oauthClient.clearTokens();
   }
 }
