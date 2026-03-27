@@ -17,10 +17,16 @@ export class PeopleHttpResourceListPage {
 
 protected readonly resource = httpResource<ResultsList<Person>>(() => {
   const searchTerm = this.search();
+  
+  if (searchTerm) {
+    return {
+      url: 'https://swapi.dev/api/people',
+      params: { search: searchTerm },
+    };
+  }
+  
   return {
     url: 'https://swapi.dev/api/people',
-    // ตรวจสอบว่ามีค่า search หรือไม่ ถ้ามีให้ส่งไปใน params
-    params: searchTerm ? { search: searchTerm } : undefined
   };
 });
   protected readonly form = form(
