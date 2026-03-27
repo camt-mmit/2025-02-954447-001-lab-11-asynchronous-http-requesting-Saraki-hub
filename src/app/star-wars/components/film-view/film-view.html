@@ -1,57 +1,64 @@
 <dl>
-  <dt>title</dt>
+  <dt>Title :</dt>
   <dd>{{ data().title }}</dd>
 
-  <dt>episode_id</dt>
+  <dt>Episode ID :</dt>
   <dd>{{ data().episode_id }}</dd>
 
-  <dt>opening_crawl</dt>
+  <dt>Opening crawl :</dt>
   <dd>{{ data().opening_crawl }}</dd>
 
-  <dt>director</dt>
+  <dt>Director :</dt>
   <dd>{{ data().director }}</dd>
 
-  <dt>producer</dt>
+  <dt>Producer :</dt>
   <dd>{{ data().producer }}</dd>
 
-  <dt>release_date</dt>
-  <dd>{{ data().release_date }}</dd>
+  <dt>Release Date :</dt>
+  <dd>{{ data().release_date | date }}</dd>
 
-  <dt>characters</dt>
+  <dt>Characters :</dt>
   <dd>
-    @if (personResourceData.characters.hasValue()) {
-      <ul>
-        @for (item of personResourceData.characters.value(); track item) {
-          <li>
-            <a [routerLink]="['people', item.url | extractId]" [relativeTo]="moduleRoute()">{{
-              item.name
-            }}</a>
-          </li>
-        }
-      </ul>
-    } @else if (personResourceData.characters.error(); as error) {
-      <span>{{ error.message }}</span>
-    } @else if (personResourceData.characters.isLoading()) {
-      <p>Loading...</p>
+    @for (fieldTree of form.characters; track fieldTree) {
+      @let resource = fieldTree().metadata(characterResourceKey)!;
+
+      @if (resource.hasValue()) {
+        <a
+          [routerLink]="['people', resource.value().url | extractIdPipe]"
+          [relativeTo]="moduleRoute()"
+          ><span>{{ resource.value().name }}</span></a
+        ><br />
+      } @else if (resource.error(); as error) {
+        {{ error.message }}
+      } @else if (resource.isLoading()) {
+        Loading...
+      }
+    } @empty {
+      <p>No Resident</p>
     }
   </dd>
 
-  <dt>planets</dt>
+  <dt>Planets :</dt>
   <dd>
-    @if (planetResourceData.planets.hasValue()) {
-      <ul>
-        @for (item of planetResourceData.planets.value(); track item) {
-          <li>
-            <a [routerLink]="['planets', item.url | extractId]" [relativeTo]="moduleRoute()">{{
-              item.name
-            }}</a>
-          </li>
-        }
-      </ul>
-    } @else if (planetResourceData.planets.error(); as error) {
-      <span>{{ error.message }}</span>
-    } @else if (planetResourceData.planets.isLoading()) {
-      <p>Loading...</p>
+    @for (fieldTree of form.planets; track fieldTree) {
+      @let resource = fieldTree().metadata(planetResourceKey)!;
+
+      @if (resource.hasValue()) {
+        <a
+          [routerLink]="['film', resource.value().url | extractIdPipe]"
+          [relativeTo]="moduleRoute()"
+          ><span>{{ resource.value().name }}</span></a
+        ><br />
+      } @else if (resource.error(); as error) {
+        {{ error.message }}
+      } @else if (resource.isLoading()) {
+        Loading...
+      }
     }
   </dd>
+  <dt>Created :</dt>
+  <dd>{{ data().created | date }}</dd>
+
+  <dt>Edited :</dt>
+  <dd>{{ data().edited | date }}</dd>
 </dl>

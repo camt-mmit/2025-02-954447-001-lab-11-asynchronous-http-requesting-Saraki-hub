@@ -1,7 +1,8 @@
 <header>
   <form (submit)="$event.preventDefault()" (submit)="onSearch()">
     <fieldset [disabled]="form().disabled()">
-      <input type="text" [formField]="form.search" placeholder="Search" />
+      <!-- Form can not disabled on some browser -->
+      <input type="text" [formField]="form.searchN" placeholder="Search" />
 
       <button type="button" (click)="clearSearch()">X</button>
     </fieldset>

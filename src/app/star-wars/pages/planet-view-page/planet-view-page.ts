@@ -1,8 +1,7 @@
-import { Location } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { PlanetView } from '../../components/planet-view/planet-view';
+import { ModuleRoute } from '../../token';
 import { planetResource } from '../../helpers';
-import { ModuleActivatedRoute } from '../../tokens';
+import { PlanetView } from '../../components/planet-view/planet-view';
 
 @Component({
   selector: 'app-planet-view-page',
@@ -12,15 +11,11 @@ import { ModuleActivatedRoute } from '../../tokens';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlanetViewPage {
-  readonly id = input.required<string>();
+  readonly id = input.required<string>(); //bind route parameter
 
-  protected moduleRoute = inject(ModuleActivatedRoute);
-
-  protected readonly resource = planetResource(this.id).asReadonly();
-
-  private readonly location = inject(Location);
-
-  protected goBack(): void {
-    this.location.back();
+  protected readonly moduleRoute = inject(ModuleRoute);
+  readonly dataResource = planetResource(() => this.id());
+  protected goback() {
+    history.back();
   }
 }

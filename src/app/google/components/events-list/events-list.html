@@ -1,0 +1,8 @@
+<ul class="event-list">
+  @for (item of items(); track item) {
+    <li class="event-item">
+      <span class="event-dot"></span>
+      <span class="event-summary">{{ item.summary }}</span>
+    </li>
+  }
+</ul>

@@ -1,0 +1,71 @@
+@use 'sass:color';
+
+$primary-color: #7c3aed;
+$text-main: #1e1b2e;
+$border-color: #e5e7eb;
+
+:host {
+    display: block;
+    max-width: 600px;
+    margin: 40px auto;
+    background: white;
+    padding: 32px;
+    border-radius: 16px;
+    border: 1.5px solid #e9d5ff;
+    box-shadow: 0 4px 24px rgba($primary-color, 0.08);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+legend {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: $text-main;
+    margin-bottom: 24px;
+    width: 100%;
+    border-bottom: 1.5px solid $border-color;
+    padding-bottom: 12px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1.5px solid $border-color;
+
+    button {
+        padding: 10px 24px;
+        border-radius: 24px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+
+        &[type="submit"] {
+            background: linear-gradient(135deg, $primary-color, #a78bfa);
+            color: white;
+            box-shadow: 0 2px 8px rgba($primary-color, 0.3);
+
+            &:hover {
+                background: linear-gradient(135deg,
+                        color.adjust($primary-color, $lightness: -8%),
+                        color.adjust(#a78bfa, $lightness: -8%));
+                box-shadow: 0 4px 14px rgba($primary-color, 0.4);
+                transform: translateY(-1px);
+            }
+        }
+
+        &[type="button"] {
+            background: transparent;
+            color: $primary-color;
+            border: 1.5px solid #d8b4fe;
+
+            &:hover {
+                background: #f5f3ff;
+                border-color: $primary-color;
+            }
+        }
+    }
+}

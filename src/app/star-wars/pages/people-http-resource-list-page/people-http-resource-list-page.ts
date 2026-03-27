@@ -1,9 +1,10 @@
 import { httpResource } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, inject, input, linkedSignal } from '@angular/core';
-import { FormField, disabled, form, submit } from '@angular/forms/signals';
+import { disabled, form, FormField, submit } from '@angular/forms/signals';
+import { Person, ResultsList } from '../../types';
 import { Router } from '@angular/router';
 import { purnEmptyProperties } from '../../helpers';
-import { Person, ResultsList } from '../../types';
+
 @Component({
   selector: 'app-people-http-resource-list-page',
   imports: [FormField],
@@ -12,20 +13,21 @@ import { Person, ResultsList } from '../../types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PeopleHttpResourceListPage {
-  readonly search = input<string>();
+  readonly searchN = input<string>(); //must same as Query string
+  private readonly router = inject(Router);
 
   protected readonly resource = httpResource<ResultsList<Person>>(() => ({
     url: 'https://swapi.dev/api/people',
-    params: this.search() ? { search: this.search()! } : {},
+    params: this.searchN() ? { search: this.searchN()! } : {},
   })).asReadonly();
 
   protected readonly form = form(
-    linkedSignal(() => ({ search: this.search() ?? '' })),
+    linkedSignal(() => ({ searchN: this.searchN() ?? '' })),
     (path) => {
       disabled(path, () => this.resource.isLoading());
     },
   );
-  private readonly router = inject(Router);
+
   protected onSearch(): void {
     submit(
       this.form,
@@ -36,8 +38,9 @@ export class PeopleHttpResourceListPage {
         }),
     );
   }
+
   protected clearSearch(): void {
-    this.form.search().value.set('');
+    this.form.searchN().value.set('');
     this.onSearch();
   }
 }

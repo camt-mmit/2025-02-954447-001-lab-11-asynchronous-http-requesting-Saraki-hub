@@ -1,69 +1,79 @@
-import { DecimalPipe } from '@angular/common';
-import {ChangeDetectionStrategy,Component,computed,inject,input,linkedSignal,} from '@angular/core';
-import { FormField, disabled, form, submit } from '@angular/forms/signals';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  linkedSignal,
+} from '@angular/core';
+import { ResultsListParams } from '../../types';
 import { Router, RouterLink } from '@angular/router';
-import { planetsListResource, purnEmptyProperties } from '../../helpers';
-import { PlanetsList } from '../../components/planets-list/planets-list';
+import { planetListResource, purnEmptyProperties } from '../../helpers';
+import { disabled, form, submit, FormField } from '@angular/forms/signals';
+import { DecimalPipe } from '@angular/common';
+import { PlanetList } from '../../components/planet-list/planet-list';
 
 @Component({
   selector: 'app-planets-list-page',
-  imports: [PlanetsList, FormField, RouterLink, DecimalPipe],
+  imports: [FormField, DecimalPipe, RouterLink,PlanetList],
   templateUrl: './planets-list-page.html',
   styleUrl: './planets-list-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PlanetsListPage {
   readonly search = input<string>();
-    readonly page = input<string>();
-  
-    protected readonly params = computed(
-      () =>
-        ({
-          search: this.search() ?? '',
-          page: this.page() ?? '',
-        }) as const,
-    );
-  
-    protected readonly resource = planetsListResource(() =>
-      purnEmptyProperties(this.params()),
-    ).asReadonly();
-  
-    protected readonly currentPage = computed(() => +(this.params().page ? this.params().page : '1'));
-  
-    protected readonly previousPage = computed(() =>
-      this.resource.hasValue() && this.resource.value().previous
-        ? new URL(this.resource.value().previous!).searchParams.get('page')
-        : null,
-    );
-  
-    protected readonly nextPage = computed(() =>
-      this.resource.hasValue() && this.resource.value().next
-        ? new URL(this.resource.value().next!).searchParams.get('page')
-        : null,
-    );
-  
-    protected readonly form = form(
-      linkedSignal(() => ({ search: this.params().search }) as const),
-      (path) => {
-        disabled(path, () => this.resource.isLoading());
-      },
-    );
-  
-    private readonly router = inject(Router);
-  
-    protected onSearch(): void {
-      submit(
-        this.form,
-        async (form) =>
-          void this.router.navigate([], {
-            queryParams: purnEmptyProperties(form().value()),
-            replaceUrl: true,
-          }),
-      );
+  readonly page = input<string>();
+  private readonly params = computed<Required<ResultsListParams>>(() => ({
+    search: this.search() ?? '',
+    page: this.page() ?? '',
+  }));
+
+  protected readonly currentPage = computed(() => Number(this.page() ?? 1));
+
+  protected readonly previousPage = computed(() => {
+    if (this.resource.hasValue()) {
+      const urlText = this.resource.value().previous;
+
+      if (urlText === null) {
+        return null;
+      }
+
+      const url = new URL(urlText);
+      return url.searchParams.get('page'); //searchParams เป็น property ของ URL Object ที่จะดึงเอาเฉพาะส่วนที่อยู่หลังเครื่องหมาย ? ผลลัพธ์ที่ได้ออกมาจากคำสั่งนี้ก็คือ String คำว่า '2'
+    } else {
+      return null;
     }
-  
-    protected clearSearch(): void {
-      this.form.search().value.set('');
-      this.onSearch();
-    }
+  });
+
+  protected readonly nextPage = computed(() =>
+    this.resource.hasValue() && this.resource.value().next
+      ? new URL(this.resource.value().next!).searchParams.get('page')
+      : null,
+  );
+  private readonly router = inject(Router);
+
+  protected readonly resource = planetListResource(() => purnEmptyProperties(this.params()));
+  protected readonly form = form(
+    linkedSignal(() => ({ search: this.search() ?? '' })),
+    (path) => {
+      disabled(path, () => this.resource.isLoading());
+    },
+  );
+
+  protected onSearch(): void {
+    submit(
+      //รับค่า (Arguments) 2 ตัวหลักๆ ตัวฟอร์ม แอ็กชันที่จะให้ทำ
+      this.form,
+      async (form) =>
+        void this.router.navigate([], {
+          queryParams: purnEmptyProperties(form().value()),
+          replaceUrl: true,
+        }),
+    );
+  }
+
+  protected clearSearch(): void {
+    this.form.search().value.set('');
+    this.onSearch();
+  }
 }
